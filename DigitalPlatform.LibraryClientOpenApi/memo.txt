@@ -1,0 +1,5 @@
+﻿
+
+https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests?view=aspnetcore-6.0#outgoing-request-middleware
+
+https://github.com/App-vNext/Polly
