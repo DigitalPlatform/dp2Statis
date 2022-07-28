@@ -50,10 +50,15 @@
             this.label4 = new System.Windows.Forms.Label();
             this.textBox_login_userName = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
+            this.tabPage_getRecord = new System.Windows.Forms.TabPage();
+            this.textBox_getRecord_path = new System.Windows.Forms.TextBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.button_getRecord_request = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage_settings.SuspendLayout();
             this.tabPage_login.SuspendLayout();
+            this.tabPage_getRecord.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -103,6 +108,7 @@
             // 
             this.tabControl1.Controls.Add(this.tabPage_settings);
             this.tabControl1.Controls.Add(this.tabPage_login);
+            this.tabControl1.Controls.Add(this.tabPage_getRecord);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(0, 61);
             this.tabControl1.Name = "tabControl1";
@@ -265,6 +271,44 @@
             this.label5.TabIndex = 6;
             this.label5.Text = "用户名:";
             // 
+            // tabPage_getRecord
+            // 
+            this.tabPage_getRecord.Controls.Add(this.button_getRecord_request);
+            this.tabPage_getRecord.Controls.Add(this.textBox_getRecord_path);
+            this.tabPage_getRecord.Controls.Add(this.label7);
+            this.tabPage_getRecord.Location = new System.Drawing.Point(4, 37);
+            this.tabPage_getRecord.Name = "tabPage_getRecord";
+            this.tabPage_getRecord.Size = new System.Drawing.Size(792, 326);
+            this.tabPage_getRecord.TabIndex = 2;
+            this.tabPage_getRecord.Text = "GetRecord()";
+            this.tabPage_getRecord.UseVisualStyleBackColor = true;
+            // 
+            // textBox_getRecord_path
+            // 
+            this.textBox_getRecord_path.Location = new System.Drawing.Point(173, 34);
+            this.textBox_getRecord_path.Name = "textBox_getRecord_path";
+            this.textBox_getRecord_path.Size = new System.Drawing.Size(333, 34);
+            this.textBox_getRecord_path.TabIndex = 9;
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(9, 37);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(101, 28);
+            this.label7.TabIndex = 8;
+            this.label7.Text = "记录路径:";
+            // 
+            // button_getRecord_request
+            // 
+            this.button_getRecord_request.Location = new System.Drawing.Point(173, 129);
+            this.button_getRecord_request.Name = "button_getRecord_request";
+            this.button_getRecord_request.Size = new System.Drawing.Size(131, 40);
+            this.button_getRecord_request.TabIndex = 11;
+            this.button_getRecord_request.Text = "请求";
+            this.button_getRecord_request.UseVisualStyleBackColor = true;
+            this.button_getRecord_request.Click += new System.EventHandler(this.button_getRecord_request_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(13F, 28F);
@@ -287,6 +331,8 @@
             this.tabPage_settings.PerformLayout();
             this.tabPage_login.ResumeLayout(false);
             this.tabPage_login.PerformLayout();
+            this.tabPage_getRecord.ResumeLayout(false);
+            this.tabPage_getRecord.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -316,5 +362,9 @@
         private CheckBox checkBox_settings_patron;
         private ToolStripMenuItem MenuItem_file;
         private ToolStripMenuItem MenuItem_file_exit;
+        private TabPage tabPage_getRecord;
+        private TextBox textBox_getRecord_path;
+        private Label label7;
+        private Button button_getRecord_request;
     }
 }

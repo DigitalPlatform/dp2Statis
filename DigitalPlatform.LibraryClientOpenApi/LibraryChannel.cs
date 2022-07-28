@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace DigitalPlatform.LibraryClientOpenApi
 {
+    /*
     public class LibraryChannel
     {
         /// dp2Library 服务器的 URL
@@ -27,4 +28,5 @@ namespace DigitalPlatform.LibraryClientOpenApi
             dp2libraryClient client = new dp2libraryClient(Url, httpClient);
         }
     }
+    */
 }
