@@ -3100,15 +3100,15 @@ LibraryChannel channel,
                     || strAction == "move"
                     || strAction == "copy")
                 {
-                    string strTargetRecord = DomUtil.GetElementText(domLog.DocumentElement,
+                    string strTargetRecord = domLog.DocumentElement.GetElementText(
                         "record",
-                        out XmlNode node);
+                        out XmlElement node);
                     if (node == null)
                     {
                         strError = "日志记录中缺<record>元素";
                         return -1;
                     }
-                    string strTargetRecPath = DomUtil.GetAttr(node, "recPath");
+                    string strTargetRecPath = node.GetAttribute( "recPath");
 
                     if (string.IsNullOrEmpty(strTargetRecPath) == true)
                         return 0;
@@ -3121,10 +3121,10 @@ LibraryChannel channel,
                         strError = "日志记录中缺<oldRecord>元素";
                         return -1;
                     }
-                    string strOldRecPath = DomUtil.GetAttr(node, "recPath");
+                    string strOldRecPath = node.GetAttribute("recPath");
                     bool bOldExist = DomUtil.GetBooleanParam(node, "exist", true);
 
-                    string strMergeStyle = DomUtil.GetElementText(domLog.DocumentElement,
+                    string strMergeStyle = domLog.DocumentElement.GetElementText(
         "mergeStyle");
 
                     // 如果目标记录没有记载，就尽量用源记录
@@ -3196,15 +3196,15 @@ LibraryChannel channel,
                     || strAction == "onlydeletebiblio"
                     || strAction == "onlydeletesubrecord")
                 {
-                    string strOldRecord = DomUtil.GetElementText(domLog.DocumentElement,
+                    string strOldRecord = domLog.DocumentElement.GetElementText(
                         "oldRecord",
-                        out XmlNode node);
+                        out XmlElement node);
                     if (node == null)
                     {
                         strError = "日志记录中缺<oldRecord>元素";
                         return -1;
                     }
-                    string strRecPath = DomUtil.GetAttr(node, "recPath");
+                    string strRecPath = node.GetAttribute("recPath");
 
                     if (string.IsNullOrEmpty(strRecPath) == false)
                     {
@@ -3262,14 +3262,14 @@ LibraryChannel channel,
 ...
 </moveEntityRecords>
 * */
-            foreach (XmlNode node in nodes)
+            foreach (XmlElement node in nodes)
             {
-                string strSourceRecPath = DomUtil.GetAttr(node, "recPath");
-                string strTargetRecPath = DomUtil.GetAttr(node, "targetRecPath");
+                string strSourceRecPath = node.GetAttribute( "recPath");
+                string strTargetRecPath = node.GetAttribute( "targetRecPath");
 
                 if (strAction == "copy")
                 {
-                    string strNewBarcode = DomUtil.GetAttr(node, "newBarcode");
+                    string strNewBarcode = node.GetAttribute( "newBarcode");
 
                     var source_item = context.Items.SingleOrDefault(x => x.ItemRecPath == strSourceRecPath);
                     var target_item = context.Items.SingleOrDefault(x => x.ItemRecPath == strTargetRecPath);
@@ -3304,7 +3304,7 @@ LibraryChannel channel,
                     // 删除源。修改目标
 
 
-                    string strNewBarcode = DomUtil.GetAttr(node, "newBarcode");
+                    string strNewBarcode = node.GetAttribute( "newBarcode");
 
                     var source_item = context.Items.SingleOrDefault(x => x.ItemRecPath == strSourceRecPath);
                     var target_item = context.Items.SingleOrDefault(x => x.ItemRecPath == strTargetRecPath);
@@ -3420,9 +3420,9 @@ LibraryChannel channel,
         || strAction == "change"
         || strAction == "move")
                 {
-                    string strRecord = DomUtil.GetElementText(domLog.DocumentElement,
+                    string strRecord = domLog.DocumentElement.GetElementText(
                         "record",
-                        out XmlNode node);
+                        out XmlElement node);
                     if (node == null)
                     {
                         // 改为进行删除操作
@@ -3430,14 +3430,14 @@ LibraryChannel channel,
                         goto TRY_DELETE;
                     }
 
-                    string strNewRecPath = DomUtil.GetAttr(node, "recPath");
+                    string strNewRecPath = node.GetAttribute("recPath");
 
                     // 
                     string strOldRecord = "";
                     string strOldRecPath = "";
                     if (strAction == "move")
                     {
-                        strOldRecord = DomUtil.GetElementText(domLog.DocumentElement,
+                        strOldRecord = domLog.DocumentElement.GetElementText(
                             "oldRecord",
                             out node);
                         if (node == null)
@@ -3446,13 +3446,13 @@ LibraryChannel channel,
                             return -1;
                         }
 
-                        strOldRecPath = DomUtil.GetAttr(node, "recPath");
+                        strOldRecPath = node.GetAttribute( "recPath");
                     }
 
                     string strCreateOperTime = "";
 
                     if (strAction == "new")
-                        strCreateOperTime = DomUtil.GetElementText(domLog.DocumentElement, "operTime");
+                        strCreateOperTime = domLog.DocumentElement.GetElementText( "operTime");
 
                     // 在 SQL item 库中写入一条册记录
                     nRet = WriteItemRecord(context,
@@ -3481,16 +3481,15 @@ LibraryChannel channel,
             TRY_DELETE:
                 if (strAction == "delete")
                 {
-                    XmlNode node = null;
-                    string strOldRecord = DomUtil.GetElementText(domLog.DocumentElement,
+                    string strOldRecord = domLog.DocumentElement.GetElementText(
                         "oldRecord",
-                        out node);
+                        out XmlElement node);
                     if (node == null)
                     {
                         strError = "日志记录中缺<oldRecord>元素";
                         return -1;
                     }
-                    string strRecPath = DomUtil.GetAttr(node, "recPath");
+                    string strRecPath = node.GetAttribute("recPath");
 
                     // 删除册记录
                     var item = context.Items.FirstOrDefault(x => x.ItemRecPath == strRecPath);
@@ -3529,7 +3528,7 @@ LibraryChannel channel,
                 return -1;
             }
 
-            string strParentID = DomUtil.GetElementText(dom.DocumentElement,
+            string strParentID = dom.DocumentElement.GetElementText(
                 "parent");
             // 根据 册/订购/期/评注 记录路径和 parentid 构造所从属的书目记录路径
             string strBiblioRecPath = BuildBiblioRecPath("item",
@@ -3583,28 +3582,28 @@ out string strError)
             {
                 int nRet = 0;
 
-                string strAction = DomUtil.GetElementText(domLog.DocumentElement,
+                string strAction = domLog.DocumentElement.GetElementText(
                     "action");
 
                 if (strAction == "new"
                     || strAction == "change"
                     || strAction == "move")
                 {
-                    string strRecord = DomUtil.GetElementText(domLog.DocumentElement,
+                    string strRecord = domLog.DocumentElement.GetElementText(
                         "record",
-                        out XmlNode node);
+                        out XmlElement node);
                     if (node == null)
                     {
                         strError = "日志记录中缺<record>元素";
                         return -1;
                     }
-                    string strNewRecPath = DomUtil.GetAttr(node, "recPath");
+                    string strNewRecPath = node.GetAttribute("recPath");
 
                     string strOldRecord = "";
                     string strOldRecPath = "";
                     if (strAction == "move")
                     {
-                        strOldRecord = DomUtil.GetElementText(domLog.DocumentElement,
+                        strOldRecord = domLog.DocumentElement.GetElementText(
                             "oldRecord",
                             out node);
                         if (node == null)
@@ -3613,7 +3612,7 @@ out string strError)
                             return -1;
                         }
 
-                        strOldRecPath = DomUtil.GetAttr(node, "recPath");
+                        strOldRecPath = node.GetAttribute("recPath");
                         if (string.IsNullOrEmpty(strOldRecPath) == true)
                         {
                             strError = "日志记录中<oldRecord>元素内缺recPath属性值";
@@ -3671,15 +3670,15 @@ out string strError)
                 }
                 else if (strAction == "delete")
                 {
-                    string strOldRecord = DomUtil.GetElementText(domLog.DocumentElement,
+                    string strOldRecord = domLog.DocumentElement.GetElementText(
                         "oldRecord",
-                        out XmlNode node);
+                        out XmlElement node);
                     if (node == null)
                     {
                         strError = "日志记录中缺<oldRecord>元素";
                         return -1;
                     }
-                    string strRecPath = DomUtil.GetAttr(node, "recPath");
+                    string strRecPath = node.GetAttribute("recPath");
 
                     // 删除读者记录
                     var patron = context.Patrons.FirstOrDefault(x => x.RecPath == strRecPath);
