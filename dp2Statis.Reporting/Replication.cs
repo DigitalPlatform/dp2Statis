@@ -11,10 +11,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 using DigitalPlatform.IO;
-using DigitalPlatform.LibraryClient;
-using DigitalPlatform.LibraryClient.localhost;
+//using DigitalPlatform.LibraryClient;
+//using DigitalPlatform.LibraryClient.localhost;
 using DigitalPlatform.Text;
 using DigitalPlatform.Xml;
+using DigitalPlatform.LibraryClientOpenApi;
 
 namespace DigitalPlatform.LibraryServer.Reporting
 {
@@ -1590,6 +1591,7 @@ out strError);
                 channel,
                 (c, r) =>
                 {
+                    /*
                     long lRet = c.SearchItem(null,
     strItemDbNameParam,
     "", // (lIndex+1).ToString() + "-", // 
@@ -1601,7 +1603,25 @@ out strError);
     "",    // strSearchStyle
     "", //strOutputStyle, // (bOutputKeyCount == true ? "keycount" : ""),
     out string error);
-                    return new NormalResult { Value = (int)lRet, ErrorInfo = error };
+                    */
+                    var result = c.SearchItemAsync(new SearchItemRequest
+                    {
+                        StrItemDbName = strItemDbNameParam,
+                        StrQueryWord = "",
+                        NPerMax = -1,
+                        StrFrom = "__id",
+                        StrMatchStyle = "left",
+                        StrLang = "zh",
+                        StrResultSetName = r,
+                        StrSearchStyle = "",
+                        StrOutputStyle = "",
+                    }).Result;
+
+                    return new NormalResult
+                    {
+                        Value = (int)result.SearchItemResult.Value,
+                        ErrorInfo = result.SearchItemResult.ErrorInfo
+                    };
                 },
                 (searchresult) =>
                 {
@@ -1708,8 +1728,7 @@ out strError);
         }
 
         delegate NormalResult Delegate_search(LibraryChannel channel, string resultsetName);
-        delegate object Delegate_buildItem(
-            DigitalPlatform.LibraryClient.localhost.Record record);
+        delegate object Delegate_buildItem(Record record);
         delegate void Delegate_beforeSave(List<object> items);
 
         // BuildRecords() 每批记录个数
@@ -1781,7 +1800,7 @@ out strError);
 
 
                 ResultSetLoader loader = new ResultSetLoader(channel,
-null,
+default,
 strResultSetName,
 strStyle,
 "zh");
@@ -1792,7 +1811,7 @@ strStyle,
                 // 处理浏览结果
                 long i = lIndex;
                 List<object> lines = new List<object>();
-                foreach (DigitalPlatform.LibraryClient.localhost.Record searchresult in loader)
+                foreach (Record searchresult in loader)
                 {
                     // DigitalPlatform.LibraryClient.localhost.Record searchresult = searchresults[i];
                     if (token.IsCancellationRequested)
@@ -1939,6 +1958,7 @@ strStyle,
                 channel,
                 (c, r) =>
                 {
+                    /*
                     long lRet = c.SearchReader(null,
     strReaderDbNameParam,
     "", // (lIndex + 1).ToString() + "-", // 
@@ -1947,10 +1967,28 @@ strStyle,
     "left", // this.textBox_queryWord.Text == "" ? "left" : "exact",    // 原来为left 2007/10/18 changed
     "zh",
     r,
-    // "",    // strSearchStyle
     "", //strOutputStyle, // (bOutputKeyCount == true ? "keycount" : ""),
     out string error);
-                    return new NormalResult { Value = (int)lRet, ErrorInfo = error };
+                    */
+                    var result = c.SearchReaderAsync(
+                        new SearchReaderRequest
+                        {
+                            StrReaderDbNames = strReaderDbNameParam,
+                            StrQueryWord = "",
+                            NPerMax = -1,
+                            StrFrom = "__id",
+                            StrMatchStyle = "left",
+                            StrLang = "zh",
+                            StrResultSetName = r,
+                            StrOutputStyle = "",
+                        }
+                        ).Result;
+
+                    return new NormalResult
+                    {
+                        Value = (int)result.SearchReaderResult.Value,
+                        ErrorInfo = result.SearchReaderResult.ErrorInfo
+                    };
                 },
                 (searchresult) =>
                 {
@@ -1958,16 +1996,17 @@ strStyle,
                     if (searchresult.Cols == null)
                         throw new Exception($"浏览事项 Cols 为空: (recpath='{searchresult.Path}'  {DumpResultItem(searchresult)}");
 
-                    if (searchresult.Cols.Length < 5)
+                    if (searchresult.Cols.Count < 5)
                         return null;
 
+                    var cols = searchresult.Cols.ToArray();
                     Patron line = new Patron();
                     line.RecPath = searchresult.Path;
-                    line.Barcode = searchresult.Cols[0];
-                    line.Department = searchresult.Cols[1];
-                    line.ReaderType = searchresult.Cols[2];
-                    line.Name = searchresult.Cols[3];
-                    line.State = searchresult.Cols[4];
+                    line.Barcode = cols[0];
+                    line.Department = cols[1];
+                    line.ReaderType = cols[2];
+                    line.Name = cols[3];
+                    line.State = cols[4];
 
                     string strReaderDbName = GetDbName(searchresult.Path);
                     string strLibraryCode = (string)librarycode_table[strReaderDbName];
@@ -2006,6 +2045,7 @@ LibraryChannel channel,
                 channel,
                 (c, r) =>
                 {
+                    /*
                     long lRet = c.SearchBiblio(null,
     strBiblioDbNameParam,
     "", // (lIndex + 1).ToString() + "-", // 
@@ -2019,7 +2059,27 @@ LibraryChannel channel,
     "",
     out string strQueryXml,
     out string error);
-                    return new NormalResult { Value = (int)lRet, ErrorInfo = error };
+                    */
+                    var result = c.SearchBiblioAsync(
+                        new SearchBiblioRequest
+                        {
+                            StrBiblioDbNames = strBiblioDbNameParam,
+                            StrQueryWord = "",
+                            NPerMax = -1,
+                            StrFromStyle = "recid",
+                            StrMatchStyle = "left",
+                            StrLang = "zh",
+                            StrResultSetName = r,
+                            StrSearchStyle = "",
+                            StrOutputStyle = "",
+                            StrLocationFilter = "",
+                        }
+                        ).Result;
+                    return new NormalResult
+                    {
+                        Value = (int)result.SearchBiblioResult.Value,
+                        ErrorInfo = result.SearchBiblioResult.ErrorInfo
+                    };
                 },
                 (searchresult) =>
                 {
@@ -2086,7 +2146,7 @@ LibraryChannel channel,
                 out strError);
         }
 
-        static string DumpResultItem(DigitalPlatform.LibraryClient.localhost.Record searchresult)
+        static string DumpResultItem(Record searchresult)
         {
             if (searchresult.Cols == null)
                 return "path=" + searchresult.Path + ";cols=[null]";
@@ -2494,7 +2554,8 @@ LibraryChannel channel,
 
             OperLogLoader loader = new OperLogLoader();
             loader.Channel = channel;
-            loader.Stop = null;
+            loader.CancellationToken = token;
+            // loader.Stop = null;
             loader.Estimate = estimate;
             loader.Dates = filenames;
             loader.Level = 2;  //  Program.MainForm.OperLogLevel;
@@ -2518,7 +2579,7 @@ LibraryChannel channel,
                 int nRecCount = 0;
                 foreach (OperLogItem item in loader)
                 {
-                    if (token != null && token.IsCancellationRequested)
+                    if (token.IsCancellationRequested)
                     {
                         strError = "用户中断";
                         return 0;
@@ -2568,8 +2629,8 @@ LibraryChannel channel,
                             continue;
                         }
 
-                        string strOperation = DomUtil.GetElementText(dom.DocumentElement, "operation");
-                        string strAction = DomUtil.GetElementText(dom.DocumentElement, "action");
+                        string strOperation = dom.DocumentElement.GetElementText("operation");
+                        string strAction = dom.DocumentElement.GetElementText("action");
 
                         OperLogItem current_item = item;
                         if (StringUtil.CompareVersion(this.ServerVersion, "2.74") < 0
@@ -3756,7 +3817,7 @@ out string strError)
             {
                 int nRet = 0;
 
-                string strReaderBarcode = DomUtil.GetElementText(domLog.DocumentElement,
+                string strReaderBarcode = domLog.DocumentElement.GetElementText(
         "readerBarcode");
                 if (String.IsNullOrEmpty(strReaderBarcode) == true)
                 {
@@ -3765,9 +3826,9 @@ out string strError)
                 }
 
                 // 读入册记录
-                string strConfirmItemRecPath = DomUtil.GetElementText(domLog.DocumentElement,
+                string strConfirmItemRecPath = domLog.DocumentElement.GetElementText(
                     "confirmItemRecPath");
-                string strItemBarcode = DomUtil.GetElementText(domLog.DocumentElement,
+                string strItemBarcode = domLog.DocumentElement.GetElementText(
                     "itemBarcode");
                 if (String.IsNullOrEmpty(strItemBarcode) == true)
                 {
@@ -3775,19 +3836,19 @@ out string strError)
                     return -1;
                 }
 
-                var borrowDate = GetLocalTime(DomUtil.GetElementText(domLog.DocumentElement,
+                var borrowDate = GetLocalTime(domLog.DocumentElement.GetElementText(
                     "borrowDate"));
-                string strBorrowPeriod = DomUtil.GetElementText(domLog.DocumentElement,
+                string strBorrowPeriod = domLog.DocumentElement.GetElementText(
                     "borrowPeriod");
                 //string strReturningDate = ItemLine.GetLocalTime(DomUtil.GetElementText(domLog.DocumentElement,
                 //    "returningDate"));
 
-                string strBorrowID = DomUtil.GetElementText(domLog.DocumentElement,
+                string strBorrowID = domLog.DocumentElement.GetElementText(
     "borrowID");
                 if (string.IsNullOrEmpty(strBorrowID))
                 {
                     // 用日志记录的 uid 充当 borrowID 内容
-                    string uid = DomUtil.GetElementText(domLog.DocumentElement,
+                    string uid = domLog.DocumentElement.GetElementText(
 "uid");
                     strBorrowID = $"uid:{uid}";
 
@@ -3879,12 +3940,12 @@ out string strError)
 
             using (var dbContextTransaction = context.Database.BeginTransaction())
             {
-                string strAction = DomUtil.GetElementText(domLog.DocumentElement,
+                string strAction = domLog.DocumentElement.GetElementText(
     "action");
                 if (strAction != "return" && strAction != "lost")
                     return 0;   // 其余 inventory/read/boxing 动作并不会改变任何册记录，所以这里返回了
 
-                string strReaderBarcode = DomUtil.GetElementText(domLog.DocumentElement,
+                string strReaderBarcode = domLog.DocumentElement.GetElementText(
         "readerBarcode");
                 if (String.IsNullOrEmpty(strReaderBarcode) == true)
                 {
@@ -3893,9 +3954,9 @@ out string strError)
                 }
 
                 // 读入册记录
-                string strConfirmItemRecPath = DomUtil.GetElementText(domLog.DocumentElement,
+                string strConfirmItemRecPath = domLog.DocumentElement.GetElementText(
                     "confirmItemRecPath");
-                string strItemBarcode = DomUtil.GetElementText(domLog.DocumentElement,
+                string strItemBarcode = domLog.DocumentElement.GetElementText(
                     "itemBarcode");
                 if (String.IsNullOrEmpty(strItemBarcode) == true)
                 {

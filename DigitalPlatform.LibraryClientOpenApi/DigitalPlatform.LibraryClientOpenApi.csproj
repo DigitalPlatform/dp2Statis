@@ -24,6 +24,11 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="System.Xml.XmlDocument" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\dp-library\DigitalPlatform.Core\DigitalPlatform.Core.csproj" />
   </ItemGroup>
 
 </Project>

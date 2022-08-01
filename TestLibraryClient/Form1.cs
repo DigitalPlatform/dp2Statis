@@ -19,6 +19,18 @@ namespace TestLibraryClient
         private void Form1_Load(object sender, EventArgs e)
         {
             LoadConfig();
+
+            Program.libraryService.BeforeLogin += (s, e) =>
+            {
+                if (e.FirstTry == false)
+                {
+                    e.Cancel = true;
+                    return;
+                }
+                e.UserName = this.textBox_login_userName.Text;
+                e.Password = this.textBox_login_password.Text;
+                e.Parameters = "client=testLibraryClient|0.01";
+            };
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)

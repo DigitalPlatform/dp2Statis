@@ -7,13 +7,13 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 using Microsoft.EntityFrameworkCore;
-using MySqlConnector;
+//using MySqlConnector;
 
 
 using DigitalPlatform.Text;
 using DigitalPlatform.Xml;
 using DigitalPlatform.Marc;
-using MySql.Data.MySqlClient;
+//using MySql.Data.MySqlClient;
 
 namespace DigitalPlatform.LibraryServer.Reporting
 {

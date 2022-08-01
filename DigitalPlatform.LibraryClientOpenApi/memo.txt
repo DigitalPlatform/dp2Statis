@@ -3,3 +3,6 @@
 https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests?view=aspnetcore-6.0#outgoing-request-middleware
 
 https://github.com/App-vNext/Polly
+
+https://blog.johnnyreilly.com/2021/10/31/nswag-generated-c-sharp-client-property-name-clash/
+如何定制 C# Nswag 代码创建效果

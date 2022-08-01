@@ -7,10 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Jurassic" Version="3.2.6" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.5" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DigitalPlatform.LibraryClientOpenApi\DigitalPlatform.LibraryClientOpenApi.csproj" />
     <ProjectReference Include="..\DigitalPlatform.MarcKernel\DigitalPlatform.MarcKernel.csproj" />
     <ProjectReference Include="..\DigitalPlatform.Xml\DigitalPlatform.Xml.csproj" />
     <ProjectReference Include="..\dp-library\DigitalPlatform.Core\DigitalPlatform.Core.csproj" />
