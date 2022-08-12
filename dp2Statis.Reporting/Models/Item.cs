@@ -10,25 +10,25 @@ namespace DigitalPlatform.LibraryServer.Reporting
 {
     public class Item
     {
-        public string ItemRecPath { get; set; }
-        public string ItemBarcode { get; set; }
-        public string Location { get; set; }
-        public string AccessNo { get; set; }
-        public string BiblioRecPath { get; set; }
+        public string? ItemRecPath { get; set; }
+        public string? ItemBarcode { get; set; }
+        public string? Location { get; set; }
+        public string? AccessNo { get; set; }
+        public string? BiblioRecPath { get; set; }
 
-        public DateTime CreateTime { get; set; }
-        public string State { get; set; }
+        public DateTime? CreateTime { get; set; }
+        public string? State { get; set; }
 
-        public decimal Price { get; set; }
-        public string Unit { get; set; }
+        public decimal? Price { get; set; }
+        public string? Unit { get; set; }
 
-        public string Borrower { get; set; }
+        public string? Borrower { get; set; }
         public DateTime BorrowTime { get; set; }
-        public string BorrowPeriod { get; set; }
+        public string? BorrowPeriod { get; set; }
         public DateTime ReturningTime { get; set; }   // 预计还回时间
 
         // 2021/10/15
-        public string BorrowID { get; set; }
+        public string? BorrowID { get; set; }
 
         public Item Clone()
         {
@@ -83,34 +83,34 @@ namespace DigitalPlatform.LibraryServer.Reporting
                 line = new Item();
 
             line.ItemRecPath = strItemRecPath;
-            line.ItemBarcode = DomUtil.GetElementText(dom.DocumentElement,
+            line.ItemBarcode = dom.DocumentElement.GetElementText(
                 "barcode");
 
             if (string.IsNullOrEmpty(line.ItemBarcode))
             {
-                string strRefID = DomUtil.GetElementText(dom.DocumentElement, "refID");
+                string strRefID = dom.DocumentElement.GetElementText( "refID");
                 line.ItemBarcode = "@refID:" + strRefID;
             }
 
             string location = StringUtil.GetPureLocationString(
-            DomUtil.GetElementText(dom.DocumentElement,
+            dom.DocumentElement.GetElementText(
             "location"));    // 要变为纯净的地点信息，即不包含 #reservation 之类
             line.Location = Item.CanonicalizeLocationString(location);
 
-            line.AccessNo = DomUtil.GetElementText(dom.DocumentElement,
+            line.AccessNo = dom.DocumentElement.GetElementText(
                 "accessNo");
             line.BiblioRecPath = strBiblioRecPath;
-            line.State = DomUtil.GetElementText(dom.DocumentElement,
+            line.State = dom.DocumentElement.GetElementText(
     "state");
 
-            line.Borrower = DomUtil.GetElementText(dom.DocumentElement,
+            line.Borrower = dom.DocumentElement.GetElementText(
     "borrower");
-            line.BorrowTime = Replication.GetLocalTime(DomUtil.GetElementText(dom.DocumentElement,
+            line.BorrowTime = Replication.GetLocalTime(dom.DocumentElement.GetElementText(
     "borrowDate"));
-            line.BorrowPeriod = DomUtil.GetElementText(dom.DocumentElement,
+            line.BorrowPeriod = dom.DocumentElement.GetElementText(
 "borrowPeriod");
             // line.ReturningTime = GetLocalTime(DomUtil.GetElementText(dom.DocumentElement, "returningDate"));
-            line.BorrowID = DomUtil.GetElementText(dom.DocumentElement,
+            line.BorrowID = dom.DocumentElement.GetElementText(
     "borrowID");
 
 
@@ -133,7 +133,7 @@ namespace DigitalPlatform.LibraryServer.Reporting
             else
                 line.ReturningTime = DateTime.MinValue;
 
-            string strPrice = DomUtil.GetElementText(dom.DocumentElement,
+            string strPrice = dom.DocumentElement.GetElementText(
     "price");
             nRet = Replication.ParsePriceString(strPrice,
     out decimal value,
@@ -151,10 +151,10 @@ namespace DigitalPlatform.LibraryServer.Reporting
             }
 
             string strTime = "";
-            XmlNode node = dom.DocumentElement.SelectSingleNode("operations/operation[@name='create']");
+            XmlElement node = dom.DocumentElement.SelectSingleNode("operations/operation[@name='create']") as XmlElement;
             if (node != null)
             {
-                strTime = DomUtil.GetAttr(node, "time");
+                strTime = node.GetAttribute("time");
                 try
                 {
                     // TODO: Replication 里是否已经有特定函数?
@@ -200,6 +200,4 @@ namespace DigitalPlatform.LibraryServer.Reporting
             return text;
         }
     }
-
-
 }

@@ -187,6 +187,7 @@ this.textBox_getRecord_path.Text);
 
         private async void button_getRecord_request_Click(object sender, EventArgs e)
         {
+            /*
             Program.libraryService.Url = this.comboBox_settings_serverUrl.Text;
 
             var request = new GetRecordRequest
@@ -196,6 +197,19 @@ this.textBox_getRecord_path.Text);
             var result = await Program.libraryService.GetRecordAsync(request);
 
             MessageBox.Show(this, $"Value={result.GetRecordResult.Value}, ErrorInfo={result.GetRecordResult.ErrorInfo}, ErrorCode={result.GetRecordResult.ErrorCode}, Xml={result.StrXml}");
+            */
+
+            /*
+            LibraryChannel channel = new LibraryChannel();
+            channel.Url = this.comboBox_settings_serverUrl.Text;
+            var request = new GetRecordRequest
+            {
+                StrPath = this.textBox_getRecord_path.Text,
+            };
+            var result = await channel.GetRecordAsync(request);
+
+            MessageBox.Show(this, $"Value={result.GetRecordResult.Value}, ErrorInfo={result.GetRecordResult.ErrorInfo}, ErrorCode={result.GetRecordResult.ErrorCode}, Xml={result.StrXml}");
+            */
         }
     }
 }

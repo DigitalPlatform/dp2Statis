@@ -29,16 +29,28 @@ namespace DigitalPlatform.LibraryClientOpenApi
         /// </summary>
         public event BeforeLoginEventHandle? BeforeLogin;
 
+        public event AfterLoginEventHandle? AfterLogin;
+
+
+        TimeSpan _timeout = TimeSpan.Zero;
+
         public TimeSpan Timeout
         {
             get
             {
-                return _httpClient.Timeout;
+                return _timeout;
             }
             set
             {
-                _httpClient.Timeout = value;
+                _timeout = value;
             }
+        }
+
+        public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(120);
+
+        public LibraryChannel()
+        {
+            _httpClient.Timeout = DefaultTimeout;
         }
 
         public void Close()
@@ -46,103 +58,272 @@ namespace DigitalPlatform.LibraryClientOpenApi
             _ = LogoutAsync();
         }
 
+        public void Abort()
+        {
+            TriggerStop();
+        }
+
         public string? LibraryCodeList { get; set; }
         public string? Rights { get; set; }
 
-        public async Task<LoginResponse> LoginAsync(LoginRequest body)
+        public async Task<LoginResponse> LoginAsync(LoginRequest body,
+            CancellationToken token = default)
         {
             dp2libraryClient client = new dp2libraryClient(Url, _httpClient);
-            var result = await client.LoginAsync(body);
+
+            using var pair = new TokenPair(_timeout, token);
+            /*
+            using var timeout_source = new CancellationTokenSource(_timeout);
+            using var linked_source = CancellationTokenSource.CreateLinkedTokenSource(timeout_source.Token, token);
+            */
+            var result = await client.LoginAsync(body, pair.LinkedToken);
             LibraryCodeList = result.StrLibraryCode;
             Rights = result.StrRights;
             return result;
         }
 
-        public async Task<LogoutResponse> LogoutAsync()
+        class TokenPair : IDisposable
         {
-            dp2libraryClient client = new dp2libraryClient(Url, _httpClient);
-            return await client.LogoutAsync();
+            public CancellationTokenSource? Timeout { get; set; }
+            public CancellationTokenSource? Linked { get; set; }
+
+            public CancellationToken LinkedToken
+            {
+                get
+                {
+                    if (Linked != null)
+                        return Linked.Token;
+                    return default;
+                }
+            }
+
+            public void Dispose()
+            {
+                if (Timeout != null)
+                {
+                    Timeout.Dispose();
+                    Timeout = null;
+                }
+
+                if (Linked != null)
+                {
+                    Linked.Dispose();
+                    Linked = null;
+                }
+            }
+
+            public TokenPair(TimeSpan timeout, CancellationToken token)
+            {
+                if (timeout == TimeSpan.Zero)
+                    return;
+                Timeout = new CancellationTokenSource(timeout);
+                Linked = CancellationTokenSource.CreateLinkedTokenSource(Timeout.Token, token);
+            }
         }
 
-        public async Task<GetRecordResponse> GetRecordAsync(GetRecordRequest body)
+        public async Task<LogoutResponse> LogoutAsync(
+            CancellationToken token = default)
         {
             dp2libraryClient client = new dp2libraryClient(Url, _httpClient);
+            using var pair = new TokenPair(_timeout, token);
+            return await client.LogoutAsync(pair.LinkedToken);
+        }
+
+        public async Task StopAsync(
+            CancellationToken token = default)
+        {
+            dp2libraryClient client = new dp2libraryClient(Url, _httpClient);
+            using var pair = new TokenPair(_timeout, token);
+            await client.StopAsync(pair.LinkedToken);
+        }
+
+        public void TriggerStop()
+        {
+            dp2libraryClient client = new dp2libraryClient(Url, _httpClient);
+            // using var pair = new TokenPair(_timeout, token);
+            client.StopAsync();
+        }
+
+        //[Login]
+        public async Task<GetRecordResponse> GetRecordAsync(GetRecordRequest body,
+            CancellationToken token = default)
+        {
+            dp2libraryClient client = new dp2libraryClient(Url, _httpClient);
+
+            using var pair = new TokenPair(_timeout, token);
 
             while (true)
             {
-                var result = await client.GetRecordAsync(body);
+                var result = await client.GetRecordAsync(body, pair.LinkedToken);
                 if (await CheckResult(result.GetRecordResult) == false)
                     return result;
             }
         }
 
-        public async Task<SearchItemResponse> SearchItemAsync(SearchItemRequest body)
+        public async Task<SearchItemResponse> SearchItemAsync(SearchItemRequest body,
+            CancellationToken token = default)
         {
             dp2libraryClient client = new dp2libraryClient(Url, _httpClient);
+            using var pair = new TokenPair(_timeout, token);
 
             while (true)
             {
-                var result = await client.SearchItemAsync(body);
+                var result = await client.SearchItemAsync(body, pair.LinkedToken);
                 if (await CheckResult(result.SearchItemResult) == false)
                     return result;
             }
         }
 
-        public async Task<SearchReaderResponse> SearchReaderAsync(SearchReaderRequest body)
+        public async Task<SearchReaderResponse> SearchReaderAsync(SearchReaderRequest body,
+            CancellationToken token = default)
         {
             dp2libraryClient client = new dp2libraryClient(Url, _httpClient);
+            using var pair = new TokenPair(_timeout, token);
 
             while (true)
             {
-                var result = await client.SearchReaderAsync(body);
+                var result = await client.SearchReaderAsync(body, pair.LinkedToken);
                 if (await CheckResult(result.SearchReaderResult) == false)
                     return result;
             }
         }
 
-        public async Task<SearchBiblioResponse> SearchBiblioAsync(SearchBiblioRequest body)
+        public async Task<SearchBiblioResponse> SearchBiblioAsync(SearchBiblioRequest body,
+            CancellationToken token = default)
         {
             dp2libraryClient client = new dp2libraryClient(Url, _httpClient);
+            using var pair = new TokenPair(_timeout, token);
 
             while (true)
             {
-                var result = await client.SearchBiblioAsync(body);
+                var result = await client.SearchBiblioAsync(body, pair.LinkedToken);
                 if (await CheckResult(result.SearchBiblioResult) == false)
                     return result;
             }
         }
 
-        public async Task<GetSearchResultResponse> GetSearchResultAsync(GetSearchResultRequest body)
+        public async Task<GetSearchResultResponse> GetSearchResultAsync(GetSearchResultRequest body,
+            CancellationToken token = default)
         {
             dp2libraryClient client = new dp2libraryClient(Url, _httpClient);
+            using var pair = new TokenPair(_timeout, token);
 
             while (true)
             {
-                var result = await client.GetSearchResultAsync(body);
+                var result = await client.GetSearchResultAsync(body, pair.LinkedToken);
                 if (await CheckResult(result.GetSearchResultResult) == false)
                     return result;
             }
         }
 
-        public async Task<GetOperLogResponse> GetOperLogAsync(GetOperLogRequest body)
+        // 管理结果集
+        // parameters:
+        //      strAction   share/remove 分别表示共享为全局结果集对象/删除全局结果集对象
+        /// <summary>
+        /// 管理结果集。
+        /// 本方法实际上是由 dp2Library API GetSearchResult() 包装而来。请参考其详细介绍。
+        /// strAction 为 "share" 时，strResultSetName 内为要共享出去的通道结果集名，strGlobalResultName 为要共享成的全局结果集名；
+        /// strAction 为 "remove" 时，strResultSetName 参数不使用(设置为空即可)，strGlobalResultName 为要删除的颧骨结果集名
+        /// </summary>
+        /// <param name="strAction">动作。为 share / remove 之一</param>
+        /// <param name="strResultSetName">(当前通道)结果集名</param>
+        /// <param name="strGlobalResultName">全局结果集名</param>
+        /// <param name="strError">返回出错信息</param>
+        /// <returns>
+        /// <para>-1:   出错</para>
+        /// <para>0:    成功</para>
+        /// </returns>
+        public long ManageSearchResult(
+            string strAction,
+            string strResultSetName,
+            string strGlobalResultName,
+            out string strError)
+        {
+            var result = GetSearchResultAsync(
+                new GetSearchResultRequest
+                {
+                    StrResultSetName = strResultSetName,
+                    LStart = 0,
+                    LCount = 0,
+                    StrBrowseInfoStyle = "@" + strAction + ":" + strGlobalResultName,
+                    StrLang = "zh",
+                }
+                ).Result;
+            long lRet = result.GetSearchResultResult.Value;
+            strError = result.GetSearchResultResult.ErrorInfo;
+            return lRet;
+            /*
+            Record[] searchresults = null;
+            strError = "";
+
+        REDO:
+            try
+            {
+                IAsyncResult soapresult = this.ws.BeginGetSearchResult(
+                    strResultSetName,
+                    0,
+                    0,
+                    "@" + strAction + ":" + strGlobalResultName,
+                    "zh",
+                    null,
+                    null);
+
+                WaitComplete(soapresult);
+
+                if (this.m_ws == null)
+                {
+                    strError = "用户中断";
+                    this.ErrorCode = localhost.ErrorCode.RequestCanceled;
+                    return -1;
+                }
+
+                LibraryServerResult result = this.ws.EndGetSearchResult(
+                    out searchresults,
+                    soapresult);
+                if (result.Value == -1 && result.ErrorCode == ErrorCode.NotLogin)
+                {
+                    if (DoNotLogin(ref strError) == 1)
+                        goto REDO;
+                    return -1;
+                }
+                strError = result.ErrorInfo;
+                this.ErrorCode = result.ErrorCode;
+                this.ClearRedoCount();
+                return result.Value;
+            }
+            catch (Exception ex)
+            {
+                int nRet = ConvertWebError(ex, out strError);
+                if (nRet == 0)
+                    return -1;
+                goto REDO;
+            }
+            */
+        }
+
+        public async Task<GetOperLogResponse> GetOperLogAsync(GetOperLogRequest body,
+            CancellationToken token = default)
         {
             dp2libraryClient client = new dp2libraryClient(Url, _httpClient);
+            using var pair = new TokenPair(_timeout, token);
 
             while (true)
             {
-                var result = await client.GetOperLogAsync(body);
+                var result = await client.GetOperLogAsync(body, pair.LinkedToken);
                 if (await CheckResult(result.GetOperLogResult) == false)
                     return result;
             }
         }
 
-        public async Task<GetOperLogsResponse> GetOperLogsAsync(GetOperLogsRequest body)
+        public async Task<GetOperLogsResponse> GetOperLogsAsync(GetOperLogsRequest body,
+            CancellationToken token = default)
         {
             dp2libraryClient client = new dp2libraryClient(Url, _httpClient);
+            using var pair = new TokenPair(_timeout, token);
 
             while (true)
             {
-                var result = await client.GetOperLogsAsync(body);
+                var result = await client.GetOperLogsAsync(body, pair.LinkedToken);
                 if (await CheckResult(result.GetOperLogsResult) == false)
                     return result;
             }
@@ -170,7 +351,7 @@ namespace DigitalPlatform.LibraryClientOpenApi
             {
                 long lAttachmentFragmentStart = 0;
                 int nAttachmentFragmentLength = -1;
-                byte[] attachment_data = null;
+                byte[]? attachment_data = null;
                 long lAttachmentTotalLength = 0;
 
                 for (; ; )
@@ -193,7 +374,8 @@ namespace DigitalPlatform.LibraryClientOpenApi
                 out strError);
                     */
                     var result = this.GetOperLogAsync(
-                        new GetOperLogRequest {
+                        new GetOperLogRequest
+                        {
                             StrFileName = strFileName,
                             LIndex = lIndex,
                             LHint = lHint,
@@ -207,7 +389,7 @@ namespace DigitalPlatform.LibraryClientOpenApi
                     strError = result.GetOperLogResult.ErrorInfo;
                     strXml = result.StrXml;
                     lHintNext = result.LHintNext;
-                    attachment_data = result.Attachment_data.Cast<byte>().ToArray<byte>();
+                    attachment_data = result.Attachment_data?.Cast<byte>().ToArray<byte>();
                     lAttachmentTotalLength = result.LAttachmentTotalLength;
 
                     if (lRet == -1)
@@ -244,6 +426,61 @@ namespace DigitalPlatform.LibraryClientOpenApi
             return lRet;
         }
 
+        public async Task<GetUserResponse> GetUserAsync(GetUserRequest body,
+            CancellationToken token = default)
+        {
+            dp2libraryClient client = new dp2libraryClient(Url, _httpClient);
+            using var pair = new TokenPair(_timeout, token);
+
+            while (true)
+            {
+                var result = await client.GetUserAsync(body, pair.LinkedToken);
+                if (await CheckResult(result.GetUserResult) == false)
+                    return result;
+            }
+        }
+
+        public async Task<GetVersionResponse> GetVersionAsync(
+            CancellationToken token = default)
+        {
+            dp2libraryClient client = new dp2libraryClient(Url, _httpClient);
+            using var pair = new TokenPair(_timeout, token);
+
+            while (true)
+            {
+                var result = await client.GetVersionAsync(pair.LinkedToken);
+                if (await CheckResult(result.GetVersionResult) == false)
+                    return result;
+            }
+        }
+
+        public async Task<ListBiblioDbFromsResponse> ListBiblioDbFromsAsync(ListBiblioDbFromsRequest body,
+            CancellationToken token = default)
+        {
+            dp2libraryClient client = new dp2libraryClient(Url, _httpClient);
+            using var pair = new TokenPair(_timeout, token);
+
+            while (true)
+            {
+                var result = await client.ListBiblioDbFromsAsync(body, pair.LinkedToken);
+                if (await CheckResult(result.ListBiblioDbFromsResult) == false)
+                    return result;
+            }
+        }
+
+        public async Task<ManageDatabaseResponse> ManageDatabaseAsync(ManageDatabaseRequest body,
+            CancellationToken token = default)
+        {
+            dp2libraryClient client = new dp2libraryClient(Url, _httpClient);
+            using var pair = new TokenPair(_timeout, token);
+
+            while (true)
+            {
+                var result = await client.ManageDatabaseAsync(body, pair.LinkedToken);
+                if (await CheckResult(result.ManageDatabaseResult) == false)
+                    return result;
+            }
+        }
 
         #region 按需登录
 
@@ -368,8 +605,7 @@ namespace DigitalPlatform.LibraryClientOpenApi
                     goto REDOLOGIN;
                 }
 
-                /*
-                // this.m_nRedoCount = 0;
+                this.m_nRedoCount = 0;
                 if (this.AfterLogin != null)
                 {
                     AfterLoginEventArgs e1 = new AfterLoginEventArgs();
@@ -377,10 +613,14 @@ namespace DigitalPlatform.LibraryClientOpenApi
                     if (string.IsNullOrEmpty(e1.ErrorInfo) == false)
                     {
                         strError = e1.ErrorInfo;
-                        return -1;
+                        return new NormalResult
+                        {
+                            Value = -1,
+                            ErrorInfo = strError
+                        };
                     }
                 }
-                 */
+
                 // 登录成功,可以重做API功能了
                 return new NormalResult
                 {

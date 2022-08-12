@@ -589,7 +589,7 @@ FileShare.ReadWrite);
 
             string strXml = "";
             long lAttachmentTotalLength = 0;
-            byte[] attachment_data = null;
+            byte[]? attachment_data = null;
 
             long lFileSize = 0;
             // 2021/3/17
@@ -635,7 +635,7 @@ FileShare.ReadWrite);
                 strError = result.GetOperLogResult.ErrorInfo;
                 strXml = result.StrXml;
                 _lServerFileSize = result.LHintNext;
-                attachment_data = result.Attachment_data.Cast<byte>().ToArray<byte>();
+                attachment_data = result.Attachment_data?.Cast<byte>().ToArray<byte>();
                 lAttachmentTotalLength = result.LAttachmentTotalLength;
 
                 if (lRet == -1)

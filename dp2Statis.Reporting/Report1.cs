@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using System.Xml;
 
 using Microsoft.EntityFrameworkCore;
 
 using DigitalPlatform.IO;
 using DigitalPlatform.Text;
+using dp2Statis.Reporting;
 
 namespace DigitalPlatform.LibraryServer.Reporting
 {
@@ -2465,5 +2467,511 @@ string strOutputFileName)
                 return true;
             return string.Compare(libraryCode, pattern) == 0;
         }
+
+
+        #region  RmlToExcel
+
+        // RML 格式转换为 Excel 文件
+        public static int RmlToExcel(string strRmlFileName,
+    string strExcelFileName,
+    out string strError)
+        {
+            strError = "";
+            int nRet = 0;
+
+            using (Stream stream = File.OpenRead(strRmlFileName))
+            using (XmlTextReader reader = new XmlTextReader(stream))
+            {
+                while (true)
+                {
+                    bool bRet = reader.Read();
+                    if (bRet == false)
+                    {
+                        strError = "文件 " + strRmlFileName + " 没有根元素";
+                        return -1;
+                    }
+                    if (reader.NodeType == XmlNodeType.Element)
+                        break;
+                }
+
+                ExcelDocument doc = ExcelDocument.Create(strExcelFileName);
+                try
+                {
+                    doc.NewSheet("Sheet1");
+
+                    int nColIndex = 0;
+                    int _lineIndex = 0;
+
+                    string strTitle = "";
+                    string strComment = "";
+                    string strCreateTime = "";
+                    // string strCss = "";
+                    List<ColumnStyle> col_defs = null;
+
+                    while (true)
+                    {
+                        bool bRet = reader.Read();
+                        if (bRet == false)
+                            break;
+                        if (reader.NodeType == XmlNodeType.Element)
+                        {
+                            if (reader.Name == "title")
+                            {
+                                strTitle = reader.ReadInnerXml();
+                            }
+                            else if (reader.Name == "comment")
+                            {
+                                strComment = reader.ReadInnerXml();
+                            }
+                            else if (reader.Name == "createTime")
+                            {
+                                strCreateTime = reader.ReadElementContentAsString();
+                            }
+                            else if (reader.Name == "style")
+                            {
+                                // strCss = reader.ReadElementContentAsString();
+                            }
+                            else if (reader.Name == "columns")
+                            {
+                                // 从 RML 文件中读入 <columns> 元素
+                                nRet = ReadColumnStyle(reader,
+            out col_defs,
+            out strError);
+                                if (nRet == -1)
+                                {
+                                    strError = "ReadColumnStyle() error : " + strError;
+                                    return -1;
+                                }
+
+                            }
+                            else if (reader.Name == "table")
+                            {
+                                List<string> lines = null;
+
+                                nRet = ParseLines(strTitle,
+           out lines,
+           out strError);
+                                if (nRet == -1)
+                                {
+                                    strError = "解析 title 内容 '" + strTitle + "' 时发生错误: " + strError;
+                                    return -1;
+                                }
+
+                                // 输出标题文字
+                                nColIndex = 0;
+                                foreach (string t in lines)
+                                {
+                                    List<CellData> cells = new List<CellData>();
+                                    cells.Add(new CellData(nColIndex, t));
+                                    doc.WriteExcelLine(_lineIndex, cells);
+                                    _lineIndex++;
+                                }
+
+                                nRet = ParseLines(strComment,
+out lines,
+out strError);
+                                if (nRet == -1)
+                                {
+                                    strError = "解析 comment 内容 '" + strTitle + "' 时发生错误: " + strError;
+                                    return -1;
+                                }
+                                nColIndex = 0;
+                                foreach (string t in lines)
+                                {
+                                    List<CellData> cells = new List<CellData>();
+                                    cells.Add(new CellData(nColIndex, t));
+                                    doc.WriteExcelLine(_lineIndex, cells);
+
+                                    _lineIndex++;
+                                }
+
+                                // 空行
+                                _lineIndex++;
+
+                            }
+                            else if (reader.Name == "tr")
+                            {
+                                // 输出一行
+                                List<CellData> cells = null;
+                                nRet = ReadLine(reader,
+                                    col_defs,
+            out cells,
+            out strError);
+                                if (nRet == -1)
+                                {
+                                    strError = "ReadLine error : " + strError;
+                                    return -1;
+                                }
+                                doc.WriteExcelLine(_lineIndex, cells, WriteExcelLineStyle.None);
+                                _lineIndex++;
+                            }
+                        }
+                    }
+
+                    // create time
+                    {
+                        _lineIndex++;
+                        List<CellData> cells = new List<CellData>();
+                        cells.Add(new CellData(0, "创建时间"));
+                        cells.Add(new CellData(1, strCreateTime));
+                        doc.WriteExcelLine(_lineIndex, cells);
+
+                        _lineIndex++;
+                    }
+
+                }
+                finally
+                {
+                    doc.SaveWorksheet();
+                    doc.Close();
+                }
+            }
+
+            return 0;
+        }
+
+
+        static int ParseLines(string strInnerXml,
+            out List<string> lines,
+            out string strError)
+        {
+            lines = new List<string>();
+            strError = "";
+
+            XmlDocument dom = new XmlDocument();
+            // dom.LoadXml("<root />");
+            dom.AppendChild(dom.CreateElement("root"));
+
+            try
+            {
+                dom.DocumentElement.InnerXml = strInnerXml;
+            }
+            catch (Exception ex)
+            {
+                strError = "InnerXml 装载时出错: " + ex.Message;
+                return -1;
+            }
+
+            // TODO: 只有 <br /> 才分隔，其他的要联成一片
+            foreach (XmlNode node in dom.DocumentElement.ChildNodes)
+            {
+                if (node.NodeType == XmlNodeType.Text)
+                {
+                    lines.Add(node.InnerText);
+                }
+            }
+
+            return 0;
+        }
+
+        // 从 RML 文件中读入 <tr> 元素
+        static int ReadLine(XmlTextReader reader,
+            List<ColumnStyle> col_defs,
+            out List<CellData> cells,
+            out string strError)
+        {
+            strError = "";
+            cells = new List<CellData>();
+            int col_index = 0;
+
+            int nColIndex = 0;
+            while (true)
+            {
+                if (reader.Read() == false)
+                    break;
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    if (reader.Name == "th" || reader.Name == "td")
+                    {
+                        string strText = reader.ReadElementContentAsString();
+
+                        CellData new_cell = null;
+
+                        string strType = "";
+
+                        // 2014/8/16
+                        if (col_defs != null
+                            && col_index < col_defs.Count)
+                            strType = col_defs[col_index].Type;
+
+                        if (strType == "String")
+                            new_cell = new CellData(nColIndex++, strText, true, 0);
+                        else if (strType == "Number")
+                        {
+                            new_cell = new CellData(nColIndex++, strText, false, 0);
+                        }
+                        else // "Auto")
+                        {
+                            bool isString = !IsExcelNumber(strText);
+
+                            new_cell = new CellData(nColIndex++, strText, isString, 0);
+                        }
+
+                        cells.Add(new_cell);
+
+                        col_index++;
+                    }
+                }
+                if (reader.NodeType == XmlNodeType.EndElement
+    && reader.Name == "tr")
+                    break;
+            }
+
+            return 0;
+        }
+
+        // 检测字符串是否为纯数字(前面可以包含一个'-'号)
+        public static bool IsExcelNumber(string s)
+        {
+            if (string.IsNullOrEmpty(s) == true)
+                return false;
+
+            bool bFoundNumber = false;
+            for (int i = 0; i < s.Length; i++)
+            {
+                if (s[i] == '-' && bFoundNumber == false)
+                {
+                    continue;
+                }
+                if (s[i] == '%' && i == s.Length - 1)
+                {
+                    // 最末一个字符为 %
+                    continue;
+                }
+                if (s[i] > '9' || s[i] < '0')
+                    return false;
+                bFoundNumber = true;
+            }
+            return true;
+        }
+
+
+        #endregion
+
+        #region RmlToHtml
+
+        // RML 格式转换为 HTML 文件
+        // parameters:
+        //      strCssTemplate  CSS 模板。里面 %columns% 代表各列的样式
+        public static int RmlToHtml(string strRmlFileName,
+            string strHtmlFileName,
+            string strCssTemplate,
+            out string strError)
+        {
+            strError = "";
+            int nRet = 0;
+            try
+            {
+                using (Stream stream = File.OpenRead(strRmlFileName))
+                using (XmlTextReader reader = new XmlTextReader(stream))
+                {
+                    while (true)
+                    {
+                        bool bRet = reader.Read();
+                        if (bRet == false)
+                        {
+                            strError = "文件 " + strRmlFileName + " 没有根元素";
+                            return -1;
+                        }
+                        if (reader.NodeType == XmlNodeType.Element)
+                            break;
+                    }
+
+                    /*
+                     * https://msdn.microsoft.com/en-us/library/system.xml.xmlwriter.writestring(v=vs.110).aspx
+The default behavior of an XmlWriter created using Create is to throw an ArgumentException when attempting to write character values in the range 0x-0x1F (excluding white space characters 0x9, 0xA, and 0xD). These invalid XML characters can be written by creating the XmlWriter with the CheckCharacters property set to false. Doing so will result in the characters being replaced with numeric character entities (&#0; through &#0x1F). Additionally, an XmlTextWriter created with the new operator will replace the invalid characters with numeric character entities by default.
+                     * */
+                    using (XmlWriter writer = XmlWriter.Create(strHtmlFileName,
+                        new XmlWriterSettings
+                        {
+                            Indent = true,
+                            OmitXmlDeclaration = true,
+                            CheckCharacters = false // 2016/6/3
+                        }))
+                    {
+                        writer.WriteDocType("html", "-//W3C//DTD XHTML 1.0 Transitional//EN", "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd", null);
+                        writer.WriteStartElement("html", "http://www.w3.org/1999/xhtml");
+                        // writer.WriteAttributeString("xml", "lang", "", "en");
+
+                        string strTitle = "";
+                        string strComment = "";
+                        string strCreateTime = "";
+                        string strCss = "";
+                        List<ColumnStyle> styles = null;
+
+                        while (true)
+                        {
+                            bool bRet = reader.Read();
+                            if (bRet == false)
+                                break;
+                            if (reader.NodeType == XmlNodeType.Element)
+                            {
+                                if (reader.Name == "title")
+                                {
+                                    strTitle = reader.ReadInnerXml();
+                                }
+                                else if (reader.Name == "comment")
+                                {
+                                    strComment = reader.ReadInnerXml();
+                                }
+                                else if (reader.Name == "createTime")
+                                {
+                                    strCreateTime = reader.ReadElementContentAsString();
+                                }
+                                else if (reader.Name == "style")
+                                {
+                                    strCss = reader.ReadElementContentAsString();
+                                }
+                                else if (reader.Name == "columns")
+                                {
+                                    // 从 RML 文件中读入 <columns> 元素
+                                    nRet = ReadColumnStyle(reader,
+                out styles,
+                out strError);
+                                    if (nRet == -1)
+                                    {
+                                        strError = "ReadColumnStyle() error : " + strError;
+                                        return -1;
+                                    }
+                                }
+                                else if (reader.Name == "table")
+                                {
+                                    writer.WriteStartElement("head");
+
+                                    writer.WriteStartElement("meta");
+                                    writer.WriteAttributeString("http-equiv", "Content-Type");
+                                    writer.WriteAttributeString("content", "text/html; charset=utf-8");
+                                    writer.WriteEndElement();
+
+                                    // title
+                                    {
+                                        writer.WriteStartElement("title");
+                                        // TODO 读入的时候直接形成 lines
+                                        writer.WriteString(strTitle.Replace("<br />", " ").Replace("<br/>", " "));
+                                        writer.WriteEndElement();
+                                    }
+
+                                    // css
+                                    if (string.IsNullOrEmpty(strCss) == false)
+                                    {
+                                        writer.WriteStartElement("style");
+                                        writer.WriteAttributeString("media", "screen");
+                                        writer.WriteAttributeString("type", "text/css");
+                                        writer.WriteString(strCss);
+                                        writer.WriteEndElement();
+                                    }
+
+                                    // CSS 模板
+                                    else if (string.IsNullOrEmpty(strCssTemplate) == false)
+                                    {
+                                        StringBuilder text = new StringBuilder();
+                                        foreach (ColumnStyle style in styles)
+                                        {
+                                            string strAlign = style.Align;
+                                            if (string.IsNullOrEmpty(strAlign) == true)
+                                                strAlign = "left";
+                                            text.Append("TABLE.table ." + style.Class + " {"
+                                                + "text-align: " + strAlign + "; }\r\n");
+                                        }
+
+                                        writer.WriteStartElement("style");
+                                        writer.WriteAttributeString("media", "screen");
+                                        writer.WriteAttributeString("type", "text/css");
+                                        writer.WriteString("\r\n" + strCssTemplate.Replace("%columns%", text.ToString()) + "\r\n");
+                                        writer.WriteEndElement();
+                                    }
+
+                                    writer.WriteEndElement();   // </head>
+
+                                    writer.WriteStartElement("body");
+
+                                    if (string.IsNullOrEmpty(strTitle) == false)
+                                    {
+                                        writer.WriteStartElement("div");
+                                        writer.WriteAttributeString("class", "tabletitle");
+                                        writer.WriteRaw(strTitle);
+                                        writer.WriteEndElement();
+                                    }
+
+                                    if (string.IsNullOrEmpty(strComment) == false)
+                                    {
+                                        writer.WriteStartElement("div");
+                                        writer.WriteAttributeString("class", "titlecomment");
+                                        writer.WriteRaw(strComment);
+                                        writer.WriteEndElement();
+                                    }
+
+                                    // writer.WriteRaw(reader.ReadOuterXml());
+                                    // DumpNode(reader, writer);
+                                    writer.WriteNode(reader, true);
+
+                                    {
+                                        writer.WriteStartElement("div");
+                                        writer.WriteAttributeString("class", "createtime");
+                                        writer.WriteString("创建时间: " + strCreateTime);
+                                        writer.WriteEndElement();
+                                    }
+
+                                    writer.WriteEndElement();   // </body>
+                                }
+                            }
+                        }
+
+                        writer.WriteEndElement();   // </html>
+                    }
+                }
+
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                strError = "RmlToHtml() 出现异常: " + ExceptionUtil.GetDebugText(ex)
+                    + "\r\nstrRmlFileName=" + strRmlFileName
+                    + "\r\nstrHtmlFileName=" + strHtmlFileName
+                    + "\r\nstrCssTemplate=" + strCssTemplate;
+                throw new Exception(strError);
+            }
+        }
+
+
+        class ColumnStyle
+        {
+            public string Class = "";
+            public string Align = "";   // left/center/right
+            public string Type = "";    // String/Currency/Auto/Number
+        }
+
+        // 从 RML 文件中读入 <columns> 元素
+        static int ReadColumnStyle(XmlTextReader reader,
+            out List<ColumnStyle> styles,
+            out string strError)
+        {
+            strError = "";
+            styles = new List<ColumnStyle>();
+
+            while (true)
+            {
+                if (reader.Read() == false)
+                    break;
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    if (reader.Name == "column")
+                    {
+                        ColumnStyle style = new ColumnStyle();
+                        style.Align = reader.GetAttribute("align");
+                        style.Class = reader.GetAttribute("class");
+                        style.Type = reader.GetAttribute("type");
+                        styles.Add(style);
+                    }
+                }
+                if (reader.NodeType == XmlNodeType.EndElement
+    && reader.Name == "columns")
+                    break;
+            }
+
+            return 0;
+        }
+
+        #endregion
     }
 }

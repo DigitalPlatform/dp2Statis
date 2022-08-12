@@ -50,6 +50,7 @@ namespace DigitalPlatform.LibraryServer.Reporting
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+#if OLD
             // optionsBuilder.UseMySQL("server=localhost;database=library;user=user;password=password");
             optionsBuilder
                 // .UseLazyLoadingProxies()
@@ -58,6 +59,9 @@ namespace DigitalPlatform.LibraryServer.Reporting
                 {
                     sqlOptions.EnableRetryOnFailure();
                 }*/);
+#endif
+            optionsBuilder.UseNpgsql(_config.BuildConnectionString(),
+                options => options.UseAdminDatabase("postgres"));
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -148,23 +152,23 @@ namespace DigitalPlatform.LibraryServer.Reporting
 
     public class User
     {
-        public string ID { get; set; }
+        public string? ID { get; set; }
         // 馆代码列表。已变换为特殊形态 ,cod1,code2, 即，确保头尾都有逗号，这样方便 IndexOf() 进行匹配
-        public string LibraryCodeList { get; set; }
-        public string Rights { get; set; }
+        public string? LibraryCodeList { get; set; }
+        public string? Rights { get; set; }
     }
 
     // 日志行 基础类
     public class OperBase
     {
-        public string Date { get; set; }  // 所在日志文件日期，8 字符
+        public string? Date { get; set; }  // 所在日志文件日期，8 字符
         public long No { get; set; }
         public long SubNo { get; set; }  // 子序号。用于区分一个日志记录拆分为多个的情况
-        public string LibraryCode { get; set; }
-        public string Operation { get; set; }
-        public string Action { get; set; }
+        public string? LibraryCode { get; set; }
+        public string? Operation { get; set; }
+        public string? Action { get; set; }
         public DateTime OperTime { get; set; }
-        public string Operator { get; set; }
+        public string? Operator { get; set; }
 
         public object[] GetKeys()
         {
@@ -189,12 +193,12 @@ namespace DigitalPlatform.LibraryServer.Reporting
                 return -1;
             }
 
-            string strOperation = DomUtil.GetElementText(dom.DocumentElement, "operation");
-            string strAction = DomUtil.GetElementText(dom.DocumentElement, "action");
-            string strOperator = DomUtil.GetElementText(dom.DocumentElement, "operator");
-            string strOperTime = DomUtil.GetElementText(dom.DocumentElement,
+            string strOperation = dom.DocumentElement.GetElementText( "operation");
+            string strAction = dom.DocumentElement.GetElementText( "action");
+            string strOperator = dom.DocumentElement.GetElementText( "operator");
+            string strOperTime = dom.DocumentElement.GetAttribute(
                 "operTime");
-            string strLibraryCode = DomUtil.GetElementText(dom.DocumentElement, "libraryCode");
+            string strLibraryCode = dom.DocumentElement.GetElementText( "libraryCode");
 
             Debug.Assert(strDate.Length == 8, "");
             this.Date = strDate;
@@ -229,10 +233,10 @@ namespace DigitalPlatform.LibraryServer.Reporting
         // public string LibraryCode = "";
 
         // 读者证条码号
-        public string ReaderBarcode { get; set; }
+        public string? ReaderBarcode { get; set; }
 
         // 门名称
-        public string GateName { get; set; }
+        public string? GateName { get; set; }
 
         // 根据日志 XML 记录填充数据
         public override int SetData(XmlDocument dom,
@@ -248,10 +252,10 @@ namespace DigitalPlatform.LibraryServer.Reporting
                 return -1;
 
 
-            string strReaderBarcode = DomUtil.GetElementText(dom.DocumentElement,
+            string strReaderBarcode = dom.DocumentElement.GetElementText(
                 "readerBarcode");
 
-            string strGateName = DomUtil.GetElementText(dom.DocumentElement,
+            string strGateName = dom.DocumentElement.GetElementText(
     "gateName");
 
             /*
@@ -271,10 +275,10 @@ namespace DigitalPlatform.LibraryServer.Reporting
     public class GetResOper : OperBase
     {
         // 对象 ID
-        public string ObjectID { get; set; }
+        public string? ObjectID { get; set; }
 
         // 元数据记录路径
-        public string XmlRecPath { get; set; }
+        public string? XmlRecPath { get; set; }
 
         public string Size { get; set; }
         public string Mime { get; set; }
@@ -292,11 +296,11 @@ namespace DigitalPlatform.LibraryServer.Reporting
             if (nRet == -1)
                 return -1;
 
-            string strResPath = DomUtil.GetElementText(dom.DocumentElement,
+            string strResPath = dom.DocumentElement.GetElementText(
                 "path");
-            string strSize = DomUtil.GetElementText(dom.DocumentElement,
+            string strSize = dom.DocumentElement.GetElementText(
                 "size");
-            string strMime = DomUtil.GetElementText(dom.DocumentElement,
+            string strMime = dom.DocumentElement.GetElementText(
                 "mime");
 
             string strXmlRecPath = "";
@@ -325,15 +329,15 @@ namespace DigitalPlatform.LibraryServer.Reporting
     public class CircuOper : OperBase
     {
         // 册条码号
-        public string ItemBarcode { get; set; }
+        public string? ItemBarcode { get; set; }
 
         // 读者证条码号
-        public string ReaderBarcode { get; set; }
+        public string? ReaderBarcode { get; set; }
 
-        public DateTime ReturningTime { get; set; }
+        public DateTime? ReturningTime { get; set; }
 
         // 2021/9/28
-        public string BorrowID { get; set; }
+        public string? BorrowID { get; set; }
 
         // 根据日志 XML 记录填充数据
         public override int SetData(XmlDocument dom,
@@ -348,12 +352,12 @@ namespace DigitalPlatform.LibraryServer.Reporting
             if (nRet == -1)
                 return -1;
 
-            string strItemBarcode = DomUtil.GetElementText(dom.DocumentElement,
+            string strItemBarcode = dom.DocumentElement.GetElementText(
                 "itemBarcode");
-            string strReaderBarcode = DomUtil.GetElementText(dom.DocumentElement,
+            string strReaderBarcode = dom.DocumentElement.GetElementText(
                 "readerBarcode");
 
-            string strBorrowPeriod = DomUtil.GetElementText(dom.DocumentElement,
+            string strBorrowPeriod = dom.DocumentElement.GetElementText(
                 "borrowPeriod");
             if (string.IsNullOrEmpty(strBorrowPeriod) == false)
             {
@@ -378,7 +382,7 @@ namespace DigitalPlatform.LibraryServer.Reporting
             this.ReaderBarcode = strReaderBarcode;
 
             // 2021/9/29
-            string strBorrowID = DomUtil.GetElementText(dom.DocumentElement,
+            string strBorrowID = dom.DocumentElement.GetElementText(
     "borrowID");
             this.BorrowID = strBorrowID;
 
@@ -387,7 +391,7 @@ namespace DigitalPlatform.LibraryServer.Reporting
                 && this.Action == "borrow")
             {
                 // 用日志记录的 uid 充当 borrowID 内容
-                string uid = DomUtil.GetElementText(dom.DocumentElement,
+                string uid = dom.DocumentElement.GetElementText(
 "uid");
                 this.BorrowID = $"uid:{uid}";
             }
@@ -407,89 +411,8 @@ namespace DigitalPlatform.LibraryServer.Reporting
     public class PatronOper : OperBase
     {
         // 特有的字段
-        public string ReaderRecPath { get; set; }
-        public string ReaderBarcode { get; set; }
-
-        // 根据日志 XML 记录填充数据
-        public override int SetData(XmlDocument dom,
-            string strDate,
-            long lIndex,
-            out List<OperBase> lines,
-            out string strError)
-        {
-            strError = "";
-
-            int nRet = base.SetData(dom, strDate, lIndex, out lines, out strError);
-            if (nRet == -1)
-                return -1;
-
-            XmlNode record = dom.DocumentElement.SelectSingleNode("record");
-            if (record == null)
-                record = dom.DocumentElement.SelectSingleNode("oldRecord");
-
-            if (record != null)
-            {
-                this.ReaderRecPath = DomUtil.GetAttr(record,
-                    "recPath");
-                string strRecord = record.InnerText;
-                XmlDocument reader_dom = new XmlDocument();
-                try
-                {
-                    reader_dom.LoadXml(strRecord);
-                    this.ReaderBarcode = DomUtil.GetElementText(reader_dom.DocumentElement,
-                        "barcode");
-                }
-                catch
-                {
-                }
-            }
-
-            return 0;
-        }
-
-    }
-
-    // 编目操作 每行
-    public class BiblioOper : OperBase
-    {
-        // 特有的字段
-        public string BiblioRecPath { get; set; }
-
-        // 根据日志 XML 记录填充数据
-        public override int SetData(XmlDocument dom,
-            string strDate,
-            long lIndex,
-            out List<OperBase> lines,
-            out string strError)
-        {
-            strError = "";
-
-            int nRet = base.SetData(dom, strDate, lIndex, out lines, out strError);
-            if (nRet == -1)
-                return -1;
-
-            string strAction = DomUtil.GetElementText(dom.DocumentElement, "action");
-
-            XmlNode record = dom.DocumentElement.SelectSingleNode("record");
-            if (record == null || strAction == "delete")    // action 为 delete 的时候， 2013.2 以前的版本会具有一个 <recorde> 元素，但 recPath 属性为空
-                record = dom.DocumentElement.SelectSingleNode("oldRecord");
-
-            if (record != null)
-            {
-                this.BiblioRecPath = DomUtil.GetAttr(record,
-                    "recPath");
-            }
-            return 0;
-        }
-
-    }
-
-    // item order issue comment 每行的基类
-    public class ItemOper : OperBase
-    {
-        // 特有的字段
-        public string ItemRecPath { get; set; }
-        public string BiblioRecPath { get; set; }
+        public string? ReaderRecPath { get; set; }
+        public string? ReaderBarcode { get; set; }
 
         // 根据日志 XML 记录填充数据
         public override int SetData(XmlDocument dom,
@@ -510,7 +433,88 @@ namespace DigitalPlatform.LibraryServer.Reporting
 
             if (record != null)
             {
-                this.ItemRecPath = DomUtil.GetAttr(record,
+                this.ReaderRecPath = record.GetAttribute(
+                    "recPath");
+                string strRecord = record.InnerText;
+                XmlDocument reader_dom = new XmlDocument();
+                try
+                {
+                    reader_dom.LoadXml(strRecord);
+                    this.ReaderBarcode = reader_dom.DocumentElement.GetElementText(
+                        "barcode");
+                }
+                catch
+                {
+                }
+            }
+
+            return 0;
+        }
+
+    }
+
+    // 编目操作 每行
+    public class BiblioOper : OperBase
+    {
+        // 特有的字段
+        public string? BiblioRecPath { get; set; }
+
+        // 根据日志 XML 记录填充数据
+        public override int SetData(XmlDocument dom,
+            string strDate,
+            long lIndex,
+            out List<OperBase> lines,
+            out string strError)
+        {
+            strError = "";
+
+            int nRet = base.SetData(dom, strDate, lIndex, out lines, out strError);
+            if (nRet == -1)
+                return -1;
+
+            string strAction = dom.DocumentElement.GetElementText( "action");
+
+            XmlElement record = dom.DocumentElement.SelectSingleNode("record") as XmlElement;
+            if (record == null || strAction == "delete")    // action 为 delete 的时候， 2013.2 以前的版本会具有一个 <recorde> 元素，但 recPath 属性为空
+                record = dom.DocumentElement.SelectSingleNode("oldRecord") as XmlElement;
+
+            if (record != null)
+            {
+                this.BiblioRecPath = record.GetAttribute(
+                    "recPath");
+            }
+            return 0;
+        }
+
+    }
+
+    // item order issue comment 每行的基类
+    public class ItemOper : OperBase
+    {
+        // 特有的字段
+        public string? ItemRecPath { get; set; }
+        public string? BiblioRecPath { get; set; }
+
+        // 根据日志 XML 记录填充数据
+        public override int SetData(XmlDocument dom,
+            string strDate,
+            long lIndex,
+            out List<OperBase> lines,
+            out string strError)
+        {
+            strError = "";
+
+            int nRet = base.SetData(dom, strDate, lIndex, out lines, out strError);
+            if (nRet == -1)
+                return -1;
+
+            XmlElement record = dom.DocumentElement.SelectSingleNode("record") as XmlElement;
+            if (record == null)
+                record = dom.DocumentElement.SelectSingleNode("oldRecord") as XmlElement;
+
+            if (record != null)
+            {
+                this.ItemRecPath = record.GetAttribute(
                     "recPath");
                 string strParentID = record.GetAttribute("parent_id");
                 if (string.IsNullOrEmpty(strParentID) == true)
@@ -522,7 +526,7 @@ namespace DigitalPlatform.LibraryServer.Reporting
                         try
                         {
                             reader_dom.LoadXml(strRecord);
-                            strParentID = DomUtil.GetElementText(reader_dom.DocumentElement,
+                            strParentID = reader_dom.DocumentElement.GetElementText(
                                 "parent");
                         }
                         catch (Exception ex)
@@ -558,13 +562,13 @@ namespace DigitalPlatform.LibraryServer.Reporting
     public class AmerceOper : OperBase
     {
         // 特有的字段
-        public string AmerceRecPath { get; set; }
-        public string ItemBarcode { get; set; }
-        public string ReaderBarcode { get; set; }
-        public string Unit { get; set; }
-        public decimal Price { get; set; }  // 元值
-        public string Reason { get; set; }
-        public string ID { get; set; }
+        public string? AmerceRecPath { get; set; }
+        public string? ItemBarcode { get; set; }
+        public string? ReaderBarcode { get; set; }
+        public string? Unit { get; set; }
+        public decimal? Price { get; set; }  // 元值
+        public string? Reason { get; set; }
+        public string? ID { get; set; }
 
         // 根据日志 XML 记录填充数据
         public override int SetData(XmlDocument dom,
@@ -581,9 +585,9 @@ namespace DigitalPlatform.LibraryServer.Reporting
 
             StringBuilder debugInfo = new StringBuilder();
 
-            this.ReaderBarcode = DomUtil.GetElementText(dom.DocumentElement, "readerBarcode");
+            this.ReaderBarcode = dom.DocumentElement.GetElementText( "readerBarcode");
 
-            string strAction = DomUtil.GetElementText(dom.DocumentElement, "action");
+            string strAction = dom.DocumentElement.GetElementText( "action");
 
             // 建立交费记录
             int i = 0;
@@ -633,8 +637,8 @@ namespace DigitalPlatform.LibraryServer.Reporting
 
                 if (items.Count > 0)
                 {
-                    string strReaderBarcode = DomUtil.GetElementText(dom.DocumentElement, "readerBarcode");
-                    string strOldRecord = DomUtil.GetElementText(dom.DocumentElement, "oldReaderRecord");
+                    string strReaderBarcode = dom.DocumentElement.GetElementText( "readerBarcode");
+                    string strOldRecord = dom.DocumentElement.GetElementText( "oldReaderRecord");
                     if (string.IsNullOrEmpty(strOldRecord))
                     {
                         // strError = "amerce 类型的日志记录要求具备 oldReaderRecord 元素文本内容，需要用详细级获取日志信息";
@@ -790,7 +794,7 @@ namespace DigitalPlatform.LibraryServer.Reporting
                 return;
 
             string strError = "";
-            line.AmerceRecPath = DomUtil.GetAttr(record,
+            line.AmerceRecPath = record.GetAttribute(
                 "recPath");
             line.Action = strAction;    //  "amerce"; 2016/12/6 修改为 strAction
             string strRecord = record.InnerText;
@@ -798,14 +802,14 @@ namespace DigitalPlatform.LibraryServer.Reporting
             try
             {
                 amerce_dom.LoadXml(strRecord);
-                line.ReaderBarcode = DomUtil.GetElementText(amerce_dom.DocumentElement,
+                line.ReaderBarcode = amerce_dom.DocumentElement.GetElementText(
                     "readerBarcode");
-                line.ItemBarcode = DomUtil.GetElementText(amerce_dom.DocumentElement,
+                line.ItemBarcode = amerce_dom.DocumentElement.GetElementText(
                     "itemBarcode");
-                line.ID = DomUtil.GetElementText(amerce_dom.DocumentElement,
+                line.ID = amerce_dom.DocumentElement.GetElementText(
                     "id");
 
-                string strPrice = DomUtil.GetElementText(amerce_dom.DocumentElement,
+                string strPrice = amerce_dom.DocumentElement.GetElementText(
                     "price");
                 int nRet = ParsePriceString(strPrice,
         out decimal value,
@@ -825,7 +829,7 @@ namespace DigitalPlatform.LibraryServer.Reporting
                     line.Price = value;
                 }
 
-                line.Reason = DomUtil.GetElementText(amerce_dom.DocumentElement,
+                line.Reason = amerce_dom.DocumentElement.GetElementText(
                     "reason");
             }
             catch (Exception ex)
@@ -1038,13 +1042,14 @@ namespace DigitalPlatform.LibraryServer.Reporting
 
     public class DatabaseConfig
     {
-        public string ServerName { get; set; }
-        public string UserName { get; set; }
-        public string Password { get; set; }
-        public string DatabaseName { get; set; }
+        public string? ServerName { get; set; }
+        public string? UserName { get; set; }
+        public string? Password { get; set; }
+        public string? DatabaseName { get; set; }
 
         public string BuildConnectionString()
         {
+#if OLD
             /*
             MySqlConnectionStringBuilder builder = new MySqlConnectionStringBuilder
             {
@@ -1062,6 +1067,10 @@ namespace DigitalPlatform.LibraryServer.Reporting
             // string value = $"server={ServerName};database={DatabaseName};user={UserName};password={Password};Connection Timeout=300;Keepalive=10;"; // sslMode=None;
             string value = $"Server={ServerName};Database={DatabaseName};User Id={UserName};Password={Password};";
             return value;
+#endif
+            // pgsql
+            // return $"Host={ServerName};Username={UserName};Password={Password};Database={DatabaseName};";
+            return $"Host={ServerName};Username=postgres;Password=test;Database={DatabaseName};";
         }
     }
 }

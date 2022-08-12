@@ -9,13 +9,13 @@ namespace DigitalPlatform.LibraryServer.Reporting
 
     public class Patron
     {
-        public string RecPath { get; set; }
-        public string Barcode { get; set; }
-        public string LibraryCode { get; set; }
-        public string Department { get; set; }
-        public string ReaderType { get; set; }
-        public string Name { get; set; }
-        public string State { get; set; }
+        public string? RecPath { get; set; }
+        public string? Barcode { get; set; }
+        public string? LibraryCode { get; set; }
+        public string? Department { get; set; }
+        public string? ReaderType { get; set; }
+        public string? Name { get; set; }
+        public string? State { get; set; }
 
         // 根据 XML 记录建立
         public static int FromXml(XmlDocument dom,
@@ -30,18 +30,18 @@ namespace DigitalPlatform.LibraryServer.Reporting
                 line = new Patron();
 
             line.RecPath = strReaderRecPath;
-            line.Barcode = DomUtil.GetElementText(dom.DocumentElement,
+            line.Barcode = dom.DocumentElement.GetElementText(
                 "barcode");
 
             line.LibraryCode = strLibraryCode;
 
-            line.Department = DomUtil.GetElementText(dom.DocumentElement,
+            line.Department = dom.DocumentElement.GetElementText(
                 "department");
-            line.ReaderType = DomUtil.GetElementText(dom.DocumentElement,
+            line.ReaderType = dom.DocumentElement.GetElementText(
                 "readerType");
-            line.Name = DomUtil.GetElementText(dom.DocumentElement,
+            line.Name = dom.DocumentElement.GetElementText(
                 "name");
-            line.State = DomUtil.GetElementText(dom.DocumentElement,
+            line.State = dom.DocumentElement.GetElementText(
     "state");
             return 0;
         }

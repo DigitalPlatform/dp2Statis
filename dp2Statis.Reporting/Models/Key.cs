@@ -9,20 +9,20 @@ namespace DigitalPlatform.LibraryServer.Reporting
     public class Key
     {
         [MaxLength(256)]
-        public string Text { get; set; }
+        public string? Text { get; set; }
 
         // 检索点类型。例如 title author class class_clc
         [MaxLength(128)]
-        public string Type { get; set; }
+        public string? Type { get; set; }
 
         [MaxLength(128)]
-        public string BiblioRecPath { get; set; }
+        public string? BiblioRecPath { get; set; }
 
         // 检索点在同 Type 检索点中的序号，从 0 开始
         public int Index { get; set; }
 
         // 该检索点所从属的书目记录
-        public virtual Biblio Biblio { get; set; }
+        public virtual Biblio? Biblio { get; set; }
 
         // 在 keys 中定位一个 key 的下标
         public static int IndexOf(List<Key> keys, Key key)

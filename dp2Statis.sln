@@ -17,9 +17,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DigitalPlatform.MarcQuery",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DigitalPlatform.Xml", "DigitalPlatform.Xml\DigitalPlatform.Xml.csproj", "{AB73BC52-850E-4F92-93B5-F40FD222C01B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigitalPlatform.LibraryClientOpenApi", "DigitalPlatform.LibraryClientOpenApi\DigitalPlatform.LibraryClientOpenApi.csproj", "{6B8FF2C8-7ECF-40A8-AF29-DF83E96E8E86}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DigitalPlatform.LibraryClientOpenApi", "DigitalPlatform.LibraryClientOpenApi\DigitalPlatform.LibraryClientOpenApi.csproj", "{6B8FF2C8-7ECF-40A8-AF29-DF83E96E8E86}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestLibraryClient", "TestLibraryClient\TestLibraryClient.csproj", "{DC756F07-CAB3-42B4-A998-D67A80F50483}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestLibraryClient", "TestLibraryClient\TestLibraryClient.csproj", "{DC756F07-CAB3-42B4-A998-D67A80F50483}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestReporting", "TestReporting\TestReporting.csproj", "{8C5246F8-45E5-4455-A99B-DABB28BCCA00}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigitalPlatform.WinForm", "DigitalPlatform.WinForm\DigitalPlatform.WinForm.csproj", "{FA303AED-2AF8-4328-AC33-7C00AE5BB9B0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,6 +67,14 @@ Global
 		{DC756F07-CAB3-42B4-A998-D67A80F50483}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC756F07-CAB3-42B4-A998-D67A80F50483}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DC756F07-CAB3-42B4-A998-D67A80F50483}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C5246F8-45E5-4455-A99B-DABB28BCCA00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C5246F8-45E5-4455-A99B-DABB28BCCA00}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C5246F8-45E5-4455-A99B-DABB28BCCA00}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C5246F8-45E5-4455-A99B-DABB28BCCA00}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA303AED-2AF8-4328-AC33-7C00AE5BB9B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA303AED-2AF8-4328-AC33-7C00AE5BB9B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA303AED-2AF8-4328-AC33-7C00AE5BB9B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA303AED-2AF8-4328-AC33-7C00AE5BB9B0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

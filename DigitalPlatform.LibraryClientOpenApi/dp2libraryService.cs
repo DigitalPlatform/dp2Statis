@@ -301,6 +301,25 @@ namespace DigitalPlatform.LibraryClientOpenApi
         public LoginFailCondition LoginFailCondition = LoginFailCondition.NormalError;
     }
 
+    /// <summary>
+    /// 登录后的事件
+    /// </summary>
+    /// <param name="sender">发送者</param>
+    /// <param name="e">事件参数</param>
+    public delegate void AfterLoginEventHandle(object sender,
+    AfterLoginEventArgs e);
+
+    /// <summary>
+    /// 登录后事件的参数
+    /// </summary>
+    public class AfterLoginEventArgs : EventArgs
+    {
+        public string ErrorInfo = "";
+        // public bool Canceled = false;
+    }
+
+    /*
+
     public class NormalResult
     {
         public int Value { get; set; }
@@ -330,5 +349,5 @@ namespace DigitalPlatform.LibraryClientOpenApi
             return $"Value={Value},ErrorInfo={ErrorInfo},ErrorCode={ErrorCode}";
         }
     }
-
+    */
 }

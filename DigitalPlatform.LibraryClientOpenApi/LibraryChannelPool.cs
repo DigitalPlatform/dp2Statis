@@ -21,6 +21,11 @@ namespace DigitalPlatform.LibraryClientOpenApi
         public event BeforeLoginEventHandle? BeforeLogin;
 
         /// <summary>
+        /// 登录后事件
+        /// </summary>
+        public event AfterLoginEventHandle? AfterLogin;
+
+        /// <summary>
         /// 最多通道数
         /// </summary>
         //public int MaxCount = 50;
@@ -62,8 +67,8 @@ namespace DigitalPlatform.LibraryClientOpenApi
                 LibraryChannel inner_channel = new LibraryChannel();
                 inner_channel.Url = strUrl;
                 inner_channel.UserName = strUserName;
-                inner_channel.BeforeLogin -= new BeforeLoginEventHandle(channel_BeforeLogin);
                 inner_channel.BeforeLogin += new BeforeLoginEventHandle(channel_BeforeLogin);
+                inner_channel.AfterLogin += Inner_channel_AfterLogin;
 
                 wrapper = new ChannelWrapper(inner_channel);
                 // wrapper.Channel = inner_channel;
@@ -76,6 +81,12 @@ namespace DigitalPlatform.LibraryClientOpenApi
             {
                 this.m_lock.ExitWriteLock(); //释放锁
             }
+        }
+
+        private void Inner_channel_AfterLogin(object sender, AfterLoginEventArgs e)
+        {
+            if (this.AfterLogin != null)
+                this.AfterLogin(sender, e);
         }
 
         /// <summary>
@@ -186,6 +197,7 @@ namespace DigitalPlatform.LibraryClientOpenApi
             foreach (ChannelWrapper wrapper in deletes)
             {
                 wrapper.Channel.BeforeLogin -= new BeforeLoginEventHandle(channel_BeforeLogin);
+                wrapper.Channel.AfterLogin -= Inner_channel_AfterLogin;
                 wrapper.Channel.Close();
             }
 

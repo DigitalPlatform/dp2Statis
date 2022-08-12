@@ -12,19 +12,19 @@ namespace DigitalPlatform.LibraryServer.Reporting
 {
     public class Biblio
     {
-        public string RecPath { get; set; }
-        public string Title { get; set; }
-        public string Author { get; set; }
-        public string Publisher { get; set; }
+        public string? RecPath { get; set; }
+        public string? Title { get; set; }
+        public string? Author { get; set; }
+        public string? Publisher { get; set; }
         [MaxLength(4096)]
-        public string Summary { get; set; }
+        public string? Summary { get; set; }
 
         // 书目记录 XML 内容
         [MaxLength(4096)]
-        public string Xml { get; set; }
+        public string? Xml { get; set; }
 
         // 书目记录的检索点
-        public virtual List<Key> Keys { get; set; }
+        public virtual List<Key>? Keys { get; set; }
 
         public void CreateSummary(string strXml, string recpath)
         {
@@ -321,6 +321,7 @@ strBiblioRecPath,
         }
     }
 
+    /*
     [Serializable()]
     public class NormalResult
     {
@@ -351,5 +352,5 @@ strBiblioRecPath,
             return $"Value={Value},ErrorInfo={ErrorInfo},ErrorCode={ErrorCode}";
         }
     }
-
+    */
 }

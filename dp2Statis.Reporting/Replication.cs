@@ -64,10 +64,17 @@ out strError);
         {
             strError = "";
 
+            /*
             long lRet = channel.GetVersion(null,
 out string strVersion,
 out string strUID,
 out strError);
+            */
+            var result = channel.GetVersionAsync().Result;
+            long lRet = result.GetVersionResult.Value;
+            var strVersion = result.GetVersionResult.ErrorInfo;
+            var strUID = result.Uid;
+
             if (lRet == -1)
             {
                 strError = "针对服务器 " + channel.Url + " 获得版本号的过程发生错误：" + strError;
@@ -96,13 +103,23 @@ out strError);
         {
             strError = "";
             // 获得书目库的检索途径
+            /*
             BiblioDbFromInfo[] infos = null;
-
             long lRet = channel.ListDbFroms(null,
                 "biblio",
                 this.Lang,
                 out infos,
                 out strError);
+            */
+            var result = channel.ListBiblioDbFromsAsync(
+                new ListBiblioDbFromsRequest { 
+                    StrDbType = "biblio",
+                    StrLang = this.Lang,
+                }
+                ).Result;
+            long lRet = result.ListBiblioDbFromsResult.Value;
+            var infos = result.Infos.ToArray();
+
             if (lRet == -1)
             {
                 strError = "针对服务器 " + channel.Url + " 列出书目库检索途径过程发生错误：" + strError;
@@ -290,25 +307,25 @@ out strError);
 
             {
                 XmlNodeList nodes = this.AllDatabaseDom.DocumentElement.SelectNodes("database[@type='biblio']");
-                foreach (XmlNode node in nodes)
+                foreach (XmlElement node in nodes)
                 {
-                    string strName = DomUtil.GetAttr(node, "name");
-                    string strType = DomUtil.GetAttr(node, "type");
+                    string strName = node.GetAttribute( "name");
+                    string strType = node.GetAttribute( "type");
                     // string strRole = DomUtil.GetAttr(node, "role");
                     // string strLibraryCode = DomUtil.GetAttr(node, "libraryCode");
 
                     BiblioDbProperty property = new BiblioDbProperty();
                     BiblioDbProperties.Add(property);
-                    property.DbName = DomUtil.GetAttr(node, "name");
-                    property.ItemDbName = DomUtil.GetAttr(node, "entityDbName");
-                    property.Syntax = DomUtil.GetAttr(node, "syntax");
-                    property.IssueDbName = DomUtil.GetAttr(node, "issueDbName");
-                    property.OrderDbName = DomUtil.GetAttr(node, "orderDbName");
-                    property.CommentDbName = DomUtil.GetAttr(node, "commentDbName");
-                    property.Role = DomUtil.GetAttr(node, "role");
+                    property.DbName = node.GetAttribute( "name");
+                    property.ItemDbName = node.GetAttribute( "entityDbName");
+                    property.Syntax = node.GetAttribute( "syntax");
+                    property.IssueDbName = node.GetAttribute( "issueDbName");
+                    property.OrderDbName = node.GetAttribute("orderDbName");
+                    property.CommentDbName = node.GetAttribute( "commentDbName");
+                    property.Role = node.GetAttribute( "role");
 
                     bool bValue = true;
-                    nRet = DomUtil.GetBooleanParam(node,
+                    nRet = node.GetBooleanParam(
                         "inCirculation",
                         true,
                         out bValue,
@@ -355,6 +372,7 @@ out strError);
 
             this.AllDatabaseDom = null;
 
+            /*
             lRet = channel.ManageDatabase(
 null,
 "getinfo",
@@ -363,9 +381,19 @@ null,
 "",
 out string strValue,
 out strError);
+            */
+            var result = channel.ManageDatabaseAsync(
+                new ManageDatabaseRequest { 
+                StrAction = "getinfo",
+                }
+                ).Result;
+            lRet = result.ManageDatabaseResult.Value;
+            strError = result.ManageDatabaseResult.ErrorInfo;
+            var strValue = result.StrOutputInfo;
+
             if (lRet == -1)
             {
-                if (channel.ErrorCode == ErrorCode.AccessDenied)
+                if ((int)channel.ErrorCode == (int)LibraryErrorCode.AccessDenied)
                 {
                 }
 
@@ -502,6 +530,7 @@ out strError);
 
             dom = null;
 
+            /*
             lRet = channel.ManageDatabase(
     null,
     "getinfo",
@@ -510,9 +539,20 @@ out strError);
     "",
     out string strValue,
     out strError);
+            */
+            var result = channel.ManageDatabaseAsync(
+    new ManageDatabaseRequest
+    {
+        StrAction = "getinfo",
+    }
+    ).Result;
+            lRet = result.ManageDatabaseResult.Value;
+            strError = result.ManageDatabaseResult.ErrorInfo;
+            var strValue = result.StrOutputInfo;
+
             if (lRet == -1)
             {
-                if (channel.ErrorCode == ErrorCode.AccessDenied)
+                if ((int)channel.ErrorCode == (int)LibraryErrorCode.AccessDenied)
                 {
                 }
 
@@ -681,6 +721,7 @@ out strError);
                 {
                     func_showMessage?.Invoke("正在计划任务 检索 " + strItemDbName + " ...");
 
+                    /*
                     // 此处检索仅获得命中数即可
                     lRet = channel.SearchItem(null,
         strItemDbName,
@@ -693,6 +734,23 @@ out strError);
         "",    // strSearchStyle
         "", //strOutputStyle, // (bOutputKeyCount == true ? "keycount" : ""),
         out strError);
+                    */
+                    var result = channel.SearchItemAsync(
+                        new SearchItemRequest { 
+                            StrItemDbName = strItemDbName,
+                            StrQueryWord = "",
+                            NPerMax = -1,
+                            StrFrom = "__id",
+                            StrMatchStyle = "left",
+                            StrLang = "zh",
+                            StrResultSetName = null,
+                            StrSearchStyle = "",
+                            StrOutputStyle = "",
+                        }
+                        ).Result;
+                    lRet = result.SearchItemResult.Value;
+                    strError = result.SearchItemResult.ErrorInfo;
+
                     if (lRet == -1)
                         return -1;
 
@@ -716,6 +774,8 @@ out strError);
                 foreach (string strReaderDbName in reader_dbnames)
                 {
                     func_showMessage?.Invoke("正在计划任务 检索 " + strReaderDbName + " ...");
+                    
+                    /*
                     // 此处检索仅获得命中数即可
                     lRet = channel.SearchReader(null,
         strReaderDbName,
@@ -727,6 +787,22 @@ out strError);
         null,   // strResultSetName
         "", //strOutputStyle, // (bOutputKeyCount == true ? "keycount" : ""),
         out strError);
+                    */
+                    var result = channel.SearchReaderAsync(
+                        new SearchReaderRequest { 
+                        StrReaderDbNames = strReaderDbName,
+                        StrQueryWord = "",
+                        NPerMax = -1,
+                        StrFrom = "__id",
+                        StrMatchStyle = "left",
+                        StrLang = "zh",
+                        StrResultSetName = null,
+                        StrOutputStyle = "",
+                        }
+                        ).Result;
+                    lRet = result.SearchReaderResult.Value;
+                    strError = result.SearchReaderResult.ErrorInfo;
+
                     if (lRet == -1)
                         return -1;
 
@@ -799,6 +875,7 @@ out strError);
                 {
                     func_showMessage?.Invoke("正在计划任务 检索 " + strBiblioDbName + " ...");
                     string strQueryXml = "";
+                    /*
                     // 此处检索仅获得命中数即可
                     lRet = channel.SearchBiblio(null,
                         strBiblioDbName,
@@ -813,6 +890,25 @@ out strError);
                         "",
                         out strQueryXml,
                         out strError);
+                    */
+                    var result = channel.SearchBiblioAsync(
+                        new SearchBiblioRequest { 
+                        StrBiblioDbNames = strBiblioDbName,
+                        StrQueryWord = "",
+                        NPerMax = -1,
+                        StrFromStyle = "recid",
+                        StrMatchStyle = "left",
+                        StrLang = "zh",
+                        StrResultSetName = null,
+                        StrSearchStyle = "",
+                        StrOutputStyle = "",
+                        StrLocationFilter = "",
+                        }
+                        ).Result;
+                    lRet = result.SearchBiblioResult.Value;
+                    strError = result.SearchBiblioResult.ErrorInfo;
+                    strQueryXml = result.StrQueryXml;
+
                     if (lRet == -1)
                         return -1;
 
@@ -891,7 +987,7 @@ out strError);
                 //      0   日志文件不存在，或者记录数为 0
                 //      >0  记录数
                 long lCount = OperLogLoader.GetOperLogCount(
-                    null,
+                    // null,
                     channel,
                     strEndDate,
                     LogType.OperLog,
@@ -951,7 +1047,7 @@ out strError);
                 //      0   日志文件不存在，或者记录数为 0
                 //      >0  记录数
                 long lCount = OperLogLoader.GetOperLogCount(
-                    null,
+                    // null,
                     channel,
                     strEndDate,
                     LogType.AccessLog,
@@ -991,7 +1087,7 @@ out strError);
             strFirstDate = "";
             strError = "";
 
-            DigitalPlatform.LibraryClient.localhost.OperLogInfo[] records = null;
+            /*DigitalPlatform.LibraryClient.localhost.*/OperLogInfo[]? records = null;
 
             List<string> dates = new List<string>();
             List<string> styles = new List<string>();
@@ -1007,6 +1103,7 @@ out strError);
 
             foreach (string style in styles)
             {
+                /*
                 // 获得日志
                 // return:
                 //      -1  error
@@ -1023,6 +1120,21 @@ out strError);
                     "", // strFilter
                     out records,
                     out strError);
+                */
+                var result = channel.GetOperLogsAsync(
+                    new GetOperLogsRequest { 
+                        StrFileName = "",
+                        LIndex = 0,
+                        LHint = -1,
+                        NCount = 1,
+                        StrStyle = style,
+                        StrFilter = "",
+                    }
+                    ).Result;
+                long lRet = result.GetOperLogsResult.Value;
+                strError = result.GetOperLogsResult.ErrorInfo;
+                records = result.Records.ToArray();
+
                 if (lRet == -1)
                     return -1;
 
@@ -1075,7 +1187,7 @@ out strError);
             try
             {
                 // 初始化各种表，除了 operlogXXX 表以外
-                string strInitilized = DomUtil.GetAttr(task_dom.DocumentElement,
+                string strInitilized = task_dom.DocumentElement.GetAttribute(
                     "initial_tables");
                 if (strInitilized != "finish")
                 {
@@ -1131,11 +1243,12 @@ out strError);
                     */
 
                     {
+                        // https://www.npgsql.org/efcore/misc/database-creation.html
                         context.Database.EnsureDeleted();
                         context.Database.EnsureCreated();
                     }
 
-                    DomUtil.SetAttr(task_dom.DocumentElement,
+                    task_dom.DocumentElement.SetAttribute(
                         "initial_tables", "finish");
                 }
 
@@ -1148,7 +1261,7 @@ out strError);
                     if (strState == "finish")
                         continue;
 
-                    nRet = DomUtil.GetIntegerParam(node,
+                    nRet = node.GetIntegerParam(
                         "count",
                         0,
                         out long lCount,
@@ -1164,18 +1277,21 @@ out strError);
                 _estimate.SetRange(0, lTotalCount * 2);
                 _estimate.StartEstimate();
 
-                foreach (XmlNode node in task_dom.DocumentElement.ChildNodes)
+                foreach (XmlElement node in task_dom.DocumentElement.ChildNodes)
                 {
+                    if (node == null)
+                        continue;
+
                     if (node.NodeType != XmlNodeType.Element)
                         continue;
 
                     if (node.Name == "database")
                     {
-                        string strDbName = DomUtil.GetAttr(node, "name");
-                        string strType = DomUtil.GetAttr(node, "type");
-                        string strState = DomUtil.GetAttr(node, "state");
+                        string strDbName = node.GetAttribute("name");
+                        string strType = node.GetAttribute( "type");
+                        string strState = node.GetAttribute("state");
 
-                        nRet = DomUtil.GetIntegerParam(node,
+                        nRet = node.GetIntegerParam(
                             "index",
                             0,
                             out long lIndex,
@@ -1183,7 +1299,7 @@ out strError);
                         if (nRet == -1)
                             return -1;
 
-                        nRet = DomUtil.GetIntegerParam(node,
+                        nRet = node.GetIntegerParam(
                             "count",
                             0,
                             out long lCurrentCount,
@@ -1208,15 +1324,15 @@ out strError);
                             }
                             catch
                             {
-                                DomUtil.SetAttr(node, "index", lIndex.ToString());
+                                node.SetAttribute("index", lIndex.ToString());
                                 throw;
                             }
                             if (nRet == -1)
                             {
-                                DomUtil.SetAttr(node, "index", lIndex.ToString());
+                                node.SetAttribute("index", lIndex.ToString());
                                 return -1;
                             }
-                            DomUtil.SetAttr(node, "state", "finish");
+                            node.SetAttribute("state", "finish");
                         }
 
                         if (strType == "reader" && strState != "finish")
@@ -1236,15 +1352,15 @@ out strError);
                             }
                             catch
                             {
-                                DomUtil.SetAttr(node, "index", lIndex.ToString());
+                                node.SetAttribute("index", lIndex.ToString());
                                 throw;
                             }
                             if (nRet == -1)
                             {
-                                DomUtil.SetAttr(node, "index", lIndex.ToString());
+                                node.SetAttribute("index", lIndex.ToString());
                                 return -1;
                             }
-                            DomUtil.SetAttr(node, "state", "finish");
+                            node.SetAttribute("state", "finish");
                         }
 
                         if (strType == "biblio")
@@ -1266,15 +1382,15 @@ out strError);
                                 }
                                 catch
                                 {
-                                    DomUtil.SetAttr(node, "index", lIndex.ToString());
+                                    node.SetAttribute( "index", lIndex.ToString());
                                     throw;
                                 }
                                 if (nRet == -1)
                                 {
-                                    DomUtil.SetAttr(node, "index", lIndex.ToString());
+                                    node.SetAttribute("index", lIndex.ToString());
                                     return -1;
                                 }
-                                DomUtil.SetAttr(node, "state", "finish");
+                                node.SetAttribute("state", "finish");
                             }
 
 #if NO
@@ -1337,7 +1453,7 @@ out strError);
 
                     if (node.Name == "user")
                     {
-                        string strState = DomUtil.GetAttr(node, "state");
+                        string strState = node.GetAttribute("state");
 
                         if (strState != "finish")
                         {
@@ -1348,18 +1464,18 @@ out strError);
                                 out strError);
                             if (nRet == -1)
                                 return -1;
-                            DomUtil.SetAttr(node, "state", "finish");
+                            node.SetAttribute("state", "finish");
                         }
                     }
 
                     if (node.Name == "operlog")
                     {
-                        string strTableInitilized = DomUtil.GetAttr(node,
-    "initial_tables");
+                        string strTableInitilized = node.GetAttribute(
+                            "initial_tables");
 
-                        string strStartDate = DomUtil.GetAttr(node, "start_date");
-                        string strEndDate = DomUtil.GetAttr(node, "end_date");
-                        string strState = DomUtil.GetAttr(node, "state");
+                        string strStartDate = node.GetAttribute( "start_date");
+                        string strEndDate = node.GetAttribute( "end_date");
+                        string strState = node.GetAttribute( "state");
 
                         if (string.IsNullOrEmpty(strStartDate) == true)
                         {
@@ -1382,7 +1498,7 @@ out strError);
                             if (nRet == -1)
                                 return -1;
                                 */
-                            DomUtil.SetAttr(node,
+                            node.SetAttribute(
                                 "initial_tables", "finish");
                         }
 
@@ -1406,21 +1522,21 @@ out strError);
                             if (nRet == -1)
                             {
                                 if (string.IsNullOrEmpty(strLastDate) == false)
-                                    DomUtil.SetAttr(node, "start_date", strLastDate + ":" + lLastIndex.ToString() + "-");
+                                    node.SetAttribute( "start_date", strLastDate + ":" + lLastIndex.ToString() + "-");
                                 return -1;
                             }
-                            DomUtil.SetAttr(node, "state", "finish");
+                            node.SetAttribute( "state", "finish");
                         }
                     }
 
                     if (node.Name == "accesslog")
                     {
-                        string strTableInitilized = DomUtil.GetAttr(node,
+                        string strTableInitilized = node.GetAttribute(
     "initial_tables");
 
-                        string strStartDate = DomUtil.GetAttr(node, "start_date");
-                        string strEndDate = DomUtil.GetAttr(node, "end_date");
-                        string strState = DomUtil.GetAttr(node, "state");
+                        string strStartDate = node.GetAttribute( "start_date");
+                        string strEndDate = node.GetAttribute("end_date");
+                        string strState = node.GetAttribute( "state");
 
                         if (string.IsNullOrEmpty(strStartDate) == true)
                         {
@@ -1436,7 +1552,7 @@ out strError);
                         if (strTableInitilized != "finish")
                         {
                             // 前面应该已经初始化过了
-                            DomUtil.SetAttr(node,
+                            node.SetAttribute(
                                 "initial_tables", "finish");
                         }
 
@@ -1462,16 +1578,16 @@ out strError);
                             if (nRet == -1)
                             {
                                 if (string.IsNullOrEmpty(strLastDate) == false)
-                                    DomUtil.SetAttr(node, "start_date", strLastDate + ":" + lLastIndex.ToString() + "-");
+                                    node.SetAttribute( "start_date", strLastDate + ":" + lLastIndex.ToString() + "-");
                                 return -1;
                             }
-                            DomUtil.SetAttr(node, "state", "finish");
+                            node.SetAttribute( "state", "finish");
                         }
                     }
                 }
 
                 // TODO: 全部完成后，需要在 task_dom 中清除不必要的信息
-                DomUtil.SetAttr(task_dom.DocumentElement,
+                task_dom.DocumentElement.SetAttribute(
                     "state", "daily");  // 表示首次创建已经完成，进入每日同步阶段
                 return 0;
             }
@@ -1501,7 +1617,6 @@ out strError);
             // parameters:
             //      strAction   share/remove 分别表示共享为全局结果集对象/删除全局结果集对象
             long lRet = channel.ManageSearchResult(
-                null,
                 "remove",
                 "",
                 strResultSetName,
@@ -1532,6 +1647,7 @@ out strError);
             int nStart = 0;
             for (; ; )
             {
+                /*
                 long lRet = channel.GetUser(
                     null,
                     "list",
@@ -1540,6 +1656,19 @@ out strError);
                     -1,
                     out UserInfo[] users,
                     out strError);
+                */
+                var result = channel.GetUserAsync(
+                    new GetUserRequest {
+                        StrAction = "list",
+                        StrName = "",
+                        NStart = nStart,
+                        NCount = -1,
+                    }
+                    ).Result;
+                long lRet = result.GetUserResult.Value;
+                strError = result.GetUserResult.ErrorInfo;
+                var users = result.Contents.ToArray();
+
                 if (lRet == -1)
                     return -1;
                 if (lRet == 0)
@@ -1628,26 +1757,28 @@ out strError);
                     // 检查事项状态
                     if (searchresult.Cols == null)
                         throw new Exception($"浏览事项 Cols 为空: (recpath='{searchresult.Path}'  {DumpResultItem(searchresult)}");
-                    if (searchresult.Cols.Length < 12)
+                    if (searchresult.Cols.Count < 12)
                         return null;
+
+                    var cols = searchresult.Cols.ToArray();
 
                     Item line = new Item();
                     line.ItemRecPath = searchresult.Path;
-                    line.ItemBarcode = searchresult.Cols[0];
+                    line.ItemBarcode = cols[0];
                     // 2016/9/26
                     if (string.IsNullOrEmpty(line.ItemBarcode))
-                        line.ItemBarcode = "@refID:" + searchresult.Cols[11];
+                        line.ItemBarcode = "@refID:" + cols[11];
 
-                    line.Location = Item.CanonicalizeLocationString(searchresult.Cols[1]);
-                    line.AccessNo = searchresult.Cols[2];
+                    line.Location = Item.CanonicalizeLocationString(cols[1]);
+                    line.AccessNo = cols[2];
 
-                    line.State = searchresult.Cols[4];
+                    line.State = cols[4];
 
-                    line.CreateTime = GetLocalTime(searchresult.Cols[5]);
+                    line.CreateTime = GetLocalTime(cols[5]);
 
-                    line.Borrower = searchresult.Cols[6];
-                    line.BorrowTime = GetLocalTime(searchresult.Cols[7]);
-                    line.BorrowPeriod = searchresult.Cols[8];
+                    line.Borrower = cols[6];
+                    line.BorrowTime = GetLocalTime(cols[7]);
+                    line.BorrowPeriod = cols[8];
                     // line.ReturningTime = ItemLine.GetLocalTime(searchresult.Cols[9]);
 
                     int nRet = 0;
@@ -1663,6 +1794,7 @@ out strError);
                         if (nRet == -1)
                         {
                             line.ReturningTime = DateTime.MinValue;
+                            // line.ReturningTime = DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
                         }
                         else
                             line.ReturningTime = returningTime;
@@ -1670,7 +1802,7 @@ out strError);
                     else
                         line.ReturningTime = DateTime.MinValue;
 
-                    string strPrice = searchresult.Cols[10];
+                    string strPrice = cols[10];
                     nRet = ParsePriceString(strPrice,
             out decimal value,
             out string strUnit,
@@ -1694,7 +1826,7 @@ out strError);
                         dbname_table[strItemDbName] = strBiblioDbName;
                     }
 
-                    string strBiblioRecPath = strBiblioDbName + "/" + searchresult.Cols[3];
+                    string strBiblioRecPath = strBiblioDbName + "/" + cols[3];
 
                     line.BiblioRecPath = strBiblioRecPath;
                     return line;
@@ -2150,7 +2282,7 @@ LibraryChannel channel,
         {
             if (searchresult.Cols == null)
                 return "path=" + searchresult.Path + ";cols=[null]";
-            return "path=" + searchresult.Path + ";cols(" + searchresult.Cols.Length.ToString() + ")=" + string.Join("|", searchresult.Cols);
+            return "path=" + searchresult.Path + ";cols(" + searchresult.Cols.Count.ToString() + ")=" + string.Join("|", searchresult.Cols);
         }
 
         public static string GetDbName(string strPath)
@@ -2209,6 +2341,7 @@ LibraryChannel channel,
             return System.TimeZoneInfo.ConvertTimeFromUtc(
                  DateTimeUtil.FromRfc1123DateTimeString(strTime),
                  System.TimeZoneInfo.Local
+                 // TimeZoneInfo.Utc
                  );
         }
 
@@ -2954,7 +3087,7 @@ LibraryChannel channel,
             strError = "";
             int nRet = 0;
 
-            string strOperation = DomUtil.GetElementText(dom.DocumentElement,
+            string strOperation = dom.DocumentElement.GetElementText(
     "operation");
             if (strOperation == "setBiblioInfo")
             {
@@ -3000,7 +3133,7 @@ LibraryChannel channel,
 
             if (nRet == -1)
             {
-                string strAction = DomUtil.GetElementText(dom.DocumentElement,
+                string strAction = dom.DocumentElement.GetElementText(
                         "action");
                 strError = "operation=" + strOperation + ";action=" + strAction + ": " + strError;
                 return -1;
@@ -3056,25 +3189,25 @@ LibraryChannel channel,
                 //long lRet = 0;
                 int nRet = 0;
 
-                string strAction = DomUtil.GetElementText(domLog.DocumentElement,
+                string strAction = domLog.DocumentElement.GetElementText(
                     "action");
 
                 if (strAction == "new" || strAction == "change")
                 {
-                    string strRecord = DomUtil.GetElementText(domLog.DocumentElement,
+                    string strRecord = domLog.DocumentElement.GetElementText(
                         "record",
-                        out XmlNode node);
+                        out XmlElement node);
                     if (node == null)
                     {
                         strError = "日志记录中缺<record>元素";
                         return -1;
                     }
-                    string strRecPath = DomUtil.GetAttr(node, "recPath");
+                    string strRecPath = node.GetAttribute("recPath");
 
                     if (string.IsNullOrEmpty(strRecPath) == true)
                         return 0;   // 轮空
 
-                    string strTimestamp = DomUtil.GetAttr(node, "timestamp");
+                    string strTimestamp = node.GetAttribute("timestamp");
 
                     // 把书目摘要写入 biblio 表
 
@@ -3108,12 +3241,12 @@ LibraryChannel channel,
                         strError = "日志记录中缺<record>元素";
                         return -1;
                     }
-                    string strTargetRecPath = node.GetAttribute( "recPath");
+                    string strTargetRecPath = node.GetAttribute("recPath");
 
                     if (string.IsNullOrEmpty(strTargetRecPath) == true)
                         return 0;
 
-                    string strOldRecord = DomUtil.GetElementText(domLog.DocumentElement,
+                    string strOldRecord = domLog.DocumentElement.GetElementText(
                         "oldRecord",
                         out node);
                     if (node == null)
@@ -3122,7 +3255,7 @@ LibraryChannel channel,
                         return -1;
                     }
                     string strOldRecPath = node.GetAttribute("recPath");
-                    bool bOldExist = DomUtil.GetBooleanParam(node, "exist", true);
+                    bool bOldExist = node.GetBooleanParam("exist", true);
 
                     string strMergeStyle = domLog.DocumentElement.GetElementText(
         "mergeStyle");
@@ -3264,12 +3397,12 @@ LibraryChannel channel,
 * */
             foreach (XmlElement node in nodes)
             {
-                string strSourceRecPath = node.GetAttribute( "recPath");
-                string strTargetRecPath = node.GetAttribute( "targetRecPath");
+                string strSourceRecPath = node.GetAttribute("recPath");
+                string strTargetRecPath = node.GetAttribute("targetRecPath");
 
                 if (strAction == "copy")
                 {
-                    string strNewBarcode = node.GetAttribute( "newBarcode");
+                    string strNewBarcode = node.GetAttribute("newBarcode");
 
                     var source_item = context.Items.SingleOrDefault(x => x.ItemRecPath == strSourceRecPath);
                     var target_item = context.Items.SingleOrDefault(x => x.ItemRecPath == strTargetRecPath);
@@ -3304,7 +3437,7 @@ LibraryChannel channel,
                     // 删除源。修改目标
 
 
-                    string strNewBarcode = node.GetAttribute( "newBarcode");
+                    string strNewBarcode = node.GetAttribute("newBarcode");
 
                     var source_item = context.Items.SingleOrDefault(x => x.ItemRecPath == strSourceRecPath);
                     var target_item = context.Items.SingleOrDefault(x => x.ItemRecPath == strTargetRecPath);
@@ -3413,7 +3546,7 @@ LibraryChannel channel,
             {
                 int nRet = 0;
 
-                string strAction = DomUtil.GetElementText(domLog.DocumentElement,
+                string strAction = domLog.DocumentElement.GetElementText(
                     "action");
 
                 if (strAction == "new"
@@ -3446,13 +3579,13 @@ LibraryChannel channel,
                             return -1;
                         }
 
-                        strOldRecPath = node.GetAttribute( "recPath");
+                        strOldRecPath = node.GetAttribute("recPath");
                     }
 
                     string strCreateOperTime = "";
 
                     if (strAction == "new")
-                        strCreateOperTime = domLog.DocumentElement.GetElementText( "operTime");
+                        strCreateOperTime = domLog.DocumentElement.GetElementText("operTime");
 
                     // 在 SQL item 库中写入一条册记录
                     nRet = WriteItemRecord(context,

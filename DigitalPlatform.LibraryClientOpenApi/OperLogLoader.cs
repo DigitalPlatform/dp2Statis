@@ -180,7 +180,7 @@ namespace DigitalPlatform.LibraryClientOpenApi
 
             string strXml = "";
             long lAttachmentTotalLength = 0;
-            byte[] attachment_data = null;
+            byte[]? attachment_data = null;
 
             long lRecCount = 0;
 
@@ -226,7 +226,7 @@ namespace DigitalPlatform.LibraryClientOpenApi
             strError = result.GetOperLogResult.ErrorInfo;
             strXml = result.StrXml;
             lRecCount = result.LHintNext;
-            attachment_data = result.Attachment_data.Cast<byte>().ToArray<byte>();
+            attachment_data = result.Attachment_data?.Cast<byte>().ToArray<byte>();
             lAttachmentTotalLength = result.LAttachmentTotalLength;
 
 

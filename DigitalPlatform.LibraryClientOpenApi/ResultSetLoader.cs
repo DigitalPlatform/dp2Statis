@@ -89,7 +89,7 @@ namespace DigitalPlatform.LibraryClientOpenApi
                 if (this.CancellationToken.IsCancellationRequested)
                     throw new InterruptException($"用户中断");
 
-                Record[] searchresults = null;
+                // Record[] searchresults = null;
 
                 long nPerCount = nBasePerCount;
                 if (nPerCount != -1 && IsMaxResultCountValid()
@@ -137,6 +137,7 @@ namespace DigitalPlatform.LibraryClientOpenApi
                     ).Result;
 
                 this.ResultCount = result.GetSearchResultResult.Value;
+                var searchresults = result.Searchresults;
 
                 var e2 = new GettedEventArgs
                 {
@@ -181,9 +182,9 @@ namespace DigitalPlatform.LibraryClientOpenApi
                     strError = "searchresults == null";
                     throw new Exception(strError);
                 }
-                if (searchresults.Length == 0)
+                if (searchresults.Count == 0)
                 {
-                    strError = "searchresults.Length == 0";
+                    strError = "searchresults.Count == 0";
                     throw new Exception(strError);
                 }
 
@@ -201,7 +202,7 @@ namespace DigitalPlatform.LibraryClientOpenApi
                     i++;
                 }
 
-                lStart += searchresults.Length;
+                lStart += searchresults.Count;
                 if (lStart >= lHitCount)
                     yield break;
             }

@@ -8,6 +8,7 @@ using System.Text;
 using System.Xml;
 
 using DigitalPlatform.IO;
+using DigitalPlatform.LibraryClientOpenApi;
 using DigitalPlatform.Text;
 using DigitalPlatform.Xml;
 
@@ -123,18 +124,18 @@ namespace DigitalPlatform.LibraryServer.Reporting
         // 从报表配置文件中获得 <columnSortStyle> 元素文本值
         public string GetColumnSortStyle()
         {
-            return DomUtil.GetElementText(this._cfgDom.DocumentElement,
+            return this._cfgDom.DocumentElement.GetElementText(
                 "columnSortStyle");
         }
 
         public bool GetFresh()
         {
-            XmlNode nodeProperty = this._cfgDom.DocumentElement.SelectSingleNode("property");
+            XmlElement nodeProperty = this._cfgDom.DocumentElement.SelectSingleNode("property") as XmlElement;
             if (nodeProperty != null)
             {
                 string strError = "";
                 bool bValue = false;
-                int nRet = DomUtil.GetBooleanParam(nodeProperty,
+                int nRet = nodeProperty.GetBooleanParam(
                     "fresh",
                     false,
                     out bValue,
@@ -156,10 +157,10 @@ namespace DigitalPlatform.LibraryServer.Reporting
         {
             strError = "";
 
-            string strTitle = DomUtil.GetElementText(_cfgDom.DocumentElement, "title").Replace("\\r", "\r");
+            string strTitle = _cfgDom.DocumentElement.GetElementText("title").Replace("\\r", "\r");
             strTitle = StringUtil.MacroString(macro_table, strTitle);
 
-            string strComment = DomUtil.GetElementText(_cfgDom.DocumentElement, "titleComment").Replace("\\r", "\r");
+            string strComment = _cfgDom.DocumentElement.GetElementText("titleComment").Replace("\\r", "\r");
             strComment = StringUtil.MacroString(macro_table, strComment);
 
             string strCreateTime = DateTime.Now.ToString();
@@ -175,7 +176,7 @@ namespace DigitalPlatform.LibraryServer.Reporting
             else
             {
                 // 确保目录被创建
-                PathUtil.TryCreateDir(Path.GetDirectoryName(strOutputFileName));
+                OperLogLoader.TryCreateDir(Path.GetDirectoryName(strOutputFileName));
             }
 
 #if NO
@@ -776,13 +777,38 @@ object o2)
 
         static void WriteString(XmlWriter writer, string strText)
         {
-            writer.WriteString(DomUtil.ReplaceControlCharsButCrLf(strText, '*'));
+            writer.WriteString(ReplaceControlCharsButCrLf(strText, '*'));
         }
 
         static void WriteAttributeString(XmlWriter writer, string strName, string strValue)
         {
-            writer.WriteAttributeString(DomUtil.ReplaceControlCharsButCrLf(strName, '*'),
-                DomUtil.ReplaceControlCharsButCrLf(strValue, '*'));
+            writer.WriteAttributeString(ReplaceControlCharsButCrLf(strName, '*'),
+                ReplaceControlCharsButCrLf(strValue, '*'));
+        }
+
+        // 替换控制字符，但不替换 \0d \0a
+        // parameters:
+        //      chReplace   要替换成的字符。如果为 0 ，表示删除控制字符
+        public static string ReplaceControlCharsButCrLf(string strText,
+    char chReplace)
+        {
+            if (String.IsNullOrEmpty(strText) == true)
+                return strText;
+
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < strText.Length; i++)
+            {
+                char ch = strText[i];
+                if (ch >= 0x1 && ch <= 0x1f && ch != 0x0d && ch != 0x0a)
+                {
+                    if (chReplace != 0)
+                        sb.Append(chReplace);
+                }
+                else
+                    sb.Append(ch);
+            }
+
+            return sb.ToString();
         }
 
     }
