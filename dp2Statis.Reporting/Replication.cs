@@ -16,6 +16,7 @@ using DigitalPlatform.IO;
 using DigitalPlatform.Text;
 using DigitalPlatform.Xml;
 using DigitalPlatform.LibraryClientOpenApi;
+using dp2Statis.Reporting;
 
 namespace DigitalPlatform.LibraryServer.Reporting
 {
@@ -118,7 +119,7 @@ out strError);
                 }
                 ).Result;
             long lRet = result.ListBiblioDbFromsResult.Value;
-            var infos = result.Infos.ToArray();
+            var infos = result.Infos?.ToArray();
 
             if (lRet == -1)
             {
@@ -1133,7 +1134,7 @@ out strError);
                     ).Result;
                 long lRet = result.GetOperLogsResult.Value;
                 strError = result.GetOperLogsResult.ErrorInfo;
-                records = result.Records.ToArray();
+                records = result.Records?.ToArray();
 
                 if (lRet == -1)
                     return -1;
@@ -1667,7 +1668,7 @@ out strError);
                     ).Result;
                 long lRet = result.GetUserResult.Value;
                 strError = result.GetUserResult.ErrorInfo;
-                var users = result.Contents.ToArray();
+                var users = result.Contents?.ToArray();
 
                 if (lRet == -1)
                     return -1;
@@ -1793,14 +1794,17 @@ out strError);
             out string error);
                         if (nRet == -1)
                         {
-                            line.ReturningTime = DateTime.MinValue;
-                            // line.ReturningTime = DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
+                            line.ReturningTime = DataUtility.GetMinValue();
                         }
                         else
                             line.ReturningTime = returningTime;
                     }
                     else
-                        line.ReturningTime = DateTime.MinValue;
+                        line.ReturningTime = DataUtility.GetMinValue();
+
+#if DEBUG
+                    line.VerifyTimes();
+#endif
 
                     string strPrice = cols[10];
                     nRet = ParsePriceString(strPrice,
@@ -1860,7 +1864,7 @@ out strError);
         }
 
         delegate NormalResult Delegate_search(LibraryChannel channel, string resultsetName);
-        delegate object Delegate_buildItem(Record record);
+        delegate object? Delegate_buildItem(Record record);
         delegate void Delegate_beforeSave(List<object> items);
 
         // BuildRecords() 每批记录个数
@@ -2217,6 +2221,7 @@ LibraryChannel channel,
                 {
                     Biblio line = new Biblio();
                     line.RecPath = searchresult.Path;
+                    // TODO: 注意检查极限长度
                     line.Xml = searchresult.RecordBody.Xml;
                     // 创建检索点和 Summary
                     line.Create(line.Xml, line.RecPath);
@@ -2336,14 +2341,23 @@ LibraryChannel channel,
         public static DateTime GetLocalTime(string strTime)
         {
             if (String.IsNullOrEmpty(strTime) == true)
-                return DateTime.MinValue;
+                return DataUtility.GetMinValue();
 
+            return System.TimeZoneInfo.ConvertTimeFromUtc(
+     DateTimeUtil.FromRfc1123DateTimeString(strTime),
+     System.TimeZoneInfo.Utc
+     );
+            /*
+            if (String.IsNullOrEmpty(strTime) == true)
+                return DateTime.MinValue;
             return System.TimeZoneInfo.ConvertTimeFromUtc(
                  DateTimeUtil.FromRfc1123DateTimeString(strTime),
                  System.TimeZoneInfo.Local
-                 // TimeZoneInfo.Utc
                  );
+            */
         }
+
+
 
         /*
         public static string GetLocalTime(string strTime)
@@ -2371,7 +2385,7 @@ LibraryChannel channel,
             out string strError)
         {
             strError = "";
-            timeEnd = DateTime.MinValue;
+            timeEnd = DataUtility.GetMinValue();
 
             long lValue = 0;
             string strUnit = "";
@@ -2415,7 +2429,7 @@ LibraryChannel channel,
                 return -1;
 
             // strReturningTime = timeEnd.ToString("s");
-
+            timeEnd = DateTime.SpecifyKind(timeEnd, DateTimeKind.Utc);
             return 0;
         }
 
@@ -3421,7 +3435,7 @@ LibraryChannel channel,
                             {
                                 ItemRecPath = strTargetRecPath,
                                 BiblioRecPath = strTargetBiblioRecPath,
-                                CreateTime = DateTime.Now
+                                CreateTime = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc)
                             };
                         }
                     }
@@ -3471,7 +3485,7 @@ LibraryChannel channel,
                         target_item = new Item
                         {
                             ItemRecPath = strTargetRecPath,
-                            CreateTime = DateTime.Now
+                            CreateTime = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc)
                         };
                     }
 
@@ -3993,7 +4007,7 @@ out string strError)
                     }
                 }
 
-                DateTime returningTime = DateTime.MinValue;
+                DateTime returningTime = DataUtility.GetMinValue();
 
                 if (borrowDate != DateTime.MinValue)
                 {
@@ -4006,14 +4020,14 @@ out string strError)
         out strError);
                     if (nRet == -1)
                     {
-                        returningTime = DateTime.MinValue;
+                        returningTime = DataUtility.GetMinValue();
                     }
                 }
                 else
-                    returningTime = DateTime.MinValue;
+                    returningTime = DataUtility.GetMinValue();
 
 
-                Item item = null;
+                Item? item = null;
 
                 if (string.IsNullOrEmpty(strConfirmItemRecPath) == false)
                     item = context.Items.FirstOrDefault(x => x.ItemRecPath == strConfirmItemRecPath);
@@ -4122,9 +4136,9 @@ out string strError)
                     if (string.IsNullOrEmpty(item.ItemRecPath))
                         item.ItemRecPath = strConfirmItemRecPath;
                     item.Borrower = null;
-                    item.BorrowTime = DateTime.MinValue;
+                    item.BorrowTime = DataUtility.GetMinValue();
                     item.BorrowPeriod = null;
-                    item.ReturningTime = DateTime.MinValue;
+                    item.ReturningTime = DataUtility.GetMinValue();
                     item.BorrowID = null;
 
                     context.Items.Update(item);

@@ -127,7 +127,7 @@ namespace DigitalPlatform.LibraryClientOpenApi
                     ).Result;
                 long lRet = result.GetOperLogsResult.Value;
                 strError = result.GetOperLogsResult.ErrorInfo;
-                records = result.Records.ToArray();
+                records = result.Records?.ToArray();
 
                 /*
                 // testring

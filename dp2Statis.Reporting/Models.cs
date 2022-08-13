@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using DigitalPlatform.Text;
 using DigitalPlatform.Xml;
 using DigitalPlatform.Marc;
+using dp2Statis.Reporting;
 //using MySql.Data.MySqlClient;
 
 namespace DigitalPlatform.LibraryServer.Reporting
@@ -370,13 +371,13 @@ namespace DigitalPlatform.LibraryServer.Reporting
     out string error);
                 if (nRet == -1)
                 {
-                    this.ReturningTime = DateTime.MinValue;
+                    this.ReturningTime = DataUtility.GetMinValue();
                 }
                 else
                     this.ReturningTime = returningTime;
             }
             else
-                this.ReturningTime = DateTime.MinValue;
+                this.ReturningTime = DataUtility.GetMinValue();
 
             this.ItemBarcode = strItemBarcode;
             this.ReaderBarcode = strReaderBarcode;

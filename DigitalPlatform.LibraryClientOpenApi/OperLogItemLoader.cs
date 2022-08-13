@@ -698,7 +698,7 @@ FileShare.ReadWrite);
                     if (ri.lLength == -1)
                         ri.lLength = long.MaxValue - ri.lStart;
 
-                    OperLogInfo[] records = null;
+                    OperLogInfo[]? records = null;
                     long lStartRecords = 0;
 
                     long lHint = -1;
@@ -815,7 +815,7 @@ FileShare.ReadWrite);
                                     ).Result;
                                 lRet = result.GetOperLogsResult.Value;
                                 strError = result.GetOperLogsResult.ErrorInfo;
-                                records = result.Records.ToArray();
+                                records = result.Records?.ToArray();
 
                                 if (lRet == -1)
                                 {
@@ -862,11 +862,14 @@ FileShare.ReadWrite);
                                 lStartRecords = lIndex /* - ri.lStart*/;
                             }
 
-                            OperLogInfo info = records[lIndex - lStartRecords];
+                            if (records != null)
+                            {
+                                OperLogInfo info = records[lIndex - lStartRecords];
 
-                            strXml = info.Xml;
-                            lHintNext = info.HintNext;
-                            lAttachmentTotalLength = info.AttachmentLength;
+                                strXml = info.Xml;
+                                lHintNext = info.HintNext;
+                                lAttachmentTotalLength = info.AttachmentLength;
+                            }
 
                             // 写入本地缓存的日志文件
                             if (stream != null)

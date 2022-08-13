@@ -20,7 +20,7 @@ namespace DigitalPlatform.LibraryServer.Reporting
         public string? Summary { get; set; }
 
         // 书目记录 XML 内容
-        [MaxLength(4096)]
+        [MaxLength(1024*500)]
         public string? Xml { get; set; }
 
         // 书目记录的检索点
@@ -313,6 +313,7 @@ strBiblioRecPath,
             Debug.Assert(biblio.RecPath == strBiblioRecPath);
 
             biblio.RecPath = strBiblioRecPath;
+            // TODO: 注意检查极限长度
             biblio.Xml = strBiblioXml;
             biblio.Create(biblio.Xml, biblio.RecPath);
             context.AddOrUpdate(biblio);

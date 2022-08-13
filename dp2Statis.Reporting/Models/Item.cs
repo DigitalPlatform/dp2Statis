@@ -1,10 +1,13 @@
-﻿using DigitalPlatform.IO;
-using DigitalPlatform.Text;
-using DigitalPlatform.Xml;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Xml;
+
+using DigitalPlatform.IO;
+using DigitalPlatform.Text;
+using DigitalPlatform.Xml;
+using dp2Statis.Reporting;
 
 namespace DigitalPlatform.LibraryServer.Reporting
 {
@@ -16,7 +19,7 @@ namespace DigitalPlatform.LibraryServer.Reporting
         public string? AccessNo { get; set; }
         public string? BiblioRecPath { get; set; }
 
-        public DateTime? CreateTime { get; set; }
+        public DateTime CreateTime { get; set; }
         public string? State { get; set; }
 
         public decimal? Price { get; set; }
@@ -29,6 +32,13 @@ namespace DigitalPlatform.LibraryServer.Reporting
 
         // 2021/10/15
         public string? BorrowID { get; set; }
+
+        public void VerifyTimes()
+        {
+            Debug.Assert(BorrowTime.Kind == DateTimeKind.Utc);
+            Debug.Assert(ReturningTime.Kind == DateTimeKind.Utc);
+            Debug.Assert(CreateTime.Kind == DateTimeKind.Utc);
+        }
 
         public Item Clone()
         {
@@ -59,10 +69,11 @@ namespace DigitalPlatform.LibraryServer.Reporting
 
         public void ClearBorrowInfo()
         {
+            this.CreateTime = DataUtility.GetMinValue();    // 2022/8/13
             this.Borrower = null;
-            this.BorrowTime = DateTime.MinValue;
+            this.BorrowTime = DataUtility.GetMinValue();
             this.BorrowPeriod = null;
-            this.ReturningTime = DateTime.MinValue;
+            this.ReturningTime = DataUtility.GetMinValue();
             this.BorrowID = null;
         }
 
@@ -125,13 +136,13 @@ namespace DigitalPlatform.LibraryServer.Reporting
     out strError);
                 if (nRet == -1)
                 {
-                    line.ReturningTime = DateTime.MinValue;
+                    line.ReturningTime = DataUtility.GetMinValue();
                 }
                 else
                     line.ReturningTime = returningTime;
             }
             else
-                line.ReturningTime = DateTime.MinValue;
+                line.ReturningTime = DataUtility.GetMinValue();
 
             string strPrice = dom.DocumentElement.GetElementText(
     "price");
@@ -178,7 +189,7 @@ namespace DigitalPlatform.LibraryServer.Reporting
             }
 
             if (DateTime.TryParse(strTime, out DateTime createTime) == true)
-                line.CreateTime = createTime;
+                line.CreateTime = createTime.ToUniversalTime();
             return 0;
         }
 
