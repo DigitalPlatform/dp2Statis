@@ -705,6 +705,8 @@ FileShare.ReadWrite);
                     long lHintNext = -1;
                     for (long lIndex = ri.lStart; lIndex < ri.lStart + ri.lLength; lIndex++)
                     {
+                        Debug.Assert(lIndex != -1);
+
                         /*
                         if (this.Stop != null && this.Stop.State != 0)
                         {

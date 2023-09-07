@@ -1,0 +1,94 @@
+
+https://fluentscheduler.github.io/creating-schedules/
+
+https://github.com/kuzudb/kuzu
+
+https://learn.microsoft.com/en-us/aspnet/core/tutorials/first-mvc-app/controller-methods-views?view=aspnetcore-7.0
+
+https://makolyte.com/aspnet-async-sse-endpoint/
+ASP.NET – Async SSE endpoint
+
+https://learn.microsoft.com/en-us/aspnet/core/mvc/views/tag-helpers/built-in/script-tag-helper?view=aspnetcore-7.0
+Script Tag Helper in ASP.NET Core
+
+https://www.adamrussell.com/asp-net-core-section-scripts-in-a-partial-view
+ASP.NET: @section Scripts in a Partial View
+
+https://www.geeksforgeeks.org/how-to-make-vertical-scrollable-rows-in-bootstrap/
+
+https://mdbootstrap.com/docs/standard/utilities/overflow/
+Overflow
+Bootstrap 5 Overflow
+
+https://getbootstrap.com/docs/4.0/layout/grid/
+Grid system
+Use our powerful mobile-first flexbox grid to build layouts of all shapes and sizes thanks to a twelve column system, five default responsive tiers, Sass variables and mixins, and dozens of predefined classes.
+
+https://tpeczek.github.io/Lib.AspNetCore.ServerSentEvents/articles/advanced.html
+
+https://learn.microsoft.com/en-us/dotnet/core/extensions/queue-service?pivots=dotnet-6-0
+
+https://html.spec.whatwg.org/multipage/server-sent-events.html#the-eventsource-interface
+9.2 Server-sent events
+
+https://learn.microsoft.com/zh-cn/aspnet/core/mvc/views/razor?view=aspnetcore-7.0
+
+https://learn.microsoft.com/zh-cn/aspnet/core/fundamentals/routing?view=aspnetcore-7.0
+ASP.NET Core 中的路由
+
+https://learn.microsoft.com/en-us/aspnet/core/mvc/views/tag-helpers/built-in/anchor-tag-helper?view=aspnetcore-7.0
+Anchor Tag Helper in ASP.NET Core
+
+https://andrewlock.net/avoiding-startup-service-injection-in-asp-net-core-3/
+Avoiding Startup service injection in ASP.NET Core 3
+Upgrading to ASP.NET Core 3.0 - Part 3
+
+https://devblogs.microsoft.com/dotnet/attribute-routing-in-asp-net-mvc-5/
+Attribute Routing in ASP.NET MVC 5
+
+https://www.c-sharpcorner.com/article/creating-custom-tag-helpers-with-asp-net-core-mvc/
+Creating Custom Tag Helpers With ASP.NET Core MVC
+
+https://exceptionnotfound.net/anchor-tag-helpers-route-data-and-query-strings-in-asp-net-core-3-0/
+Anchor Tag Helpers, RouteData, and Query Strings in ASP.NET Core 3.0
+
+https://www.davepaquette.com/archive/2015/12/28/complex-custom-tag-helpers-in-mvc-6.aspx
+Complex Custom Tag Helpers in ASP.NET Core MVC
+
+https://www.jetbrains.com/dotnet/guide/tutorials/htmx-aspnetcore/server-sent-events/
+
+https://stackoverflow.com/questions/21794016/retain-the-password-text-box-values-after-submit-in-mvc
+
+https://www.c-sharpcorner.com/blogs/server-side-events-in-asp-net-mvc
+
+https://zhuanlan.zhihu.com/p/611672549
+PostgreSQL 查看服务器版本的几种方法
+
+https://github.com/npgsql/npgsql/issues/5077
+
+https://dba.stackexchange.com/questions/318029/run-both-of-drop-database-and-creat-database-in-cli-with-c-option-of-psql
+
+https://learn.microsoft.com/en-us/iis/manage/configuring-security/application-pool-identities
+Application Pool Identities
+
+https://zhuanlan.zhihu.com/p/53339212
+ASP.Net Core 2.2 SQLite数据库相对路径异常
+
+https://www.iis.net/
+
+https://stackoverflow.com/questions/31510347/iis-how-to-determine-applicationpoolidentity-account
+
+https://learn.microsoft.com/en-us/troubleshoot/developer/webapps/iis/www-authentication-authorization/default-permissions-user-rights
+Default permissions and user rights for IIS 7.0 and later
+
+https://learn.microsoft.com/en-us/visualstudio/debugger/how-to-enable-debugging-for-aspnet-applications?view=vs-2022#debug-aspnet-core-apps
+Debug ASP.NET or ASP.NET Core apps in Visual Studio
+
+https://github.com/orgs/ApiForum/discussions
+https://jihulab.com/apiforum
+
+https://learn.microsoft.com/zh-cn/aspnet/core/tutorials/web-api-help-pages-using-swagger?view=aspnetcore-7.0
+带有 Swagger/OpenAPI 的 ASP.NET Core Web API 文档
+
+https://swagger.io/specification/
+

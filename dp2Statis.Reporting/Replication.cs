@@ -113,12 +113,14 @@ out strError);
                 out strError);
             */
             var result = channel.ListBiblioDbFromsAsync(
-                new ListBiblioDbFromsRequest { 
+                new ListBiblioDbFromsRequest
+                {
                     StrDbType = "biblio",
                     StrLang = this.Lang,
                 }
                 ).Result;
             long lRet = result.ListBiblioDbFromsResult.Value;
+            strError = result.ListBiblioDbFromsResult.ErrorInfo;
             var infos = result.Infos?.ToArray();
 
             if (lRet == -1)
@@ -310,20 +312,20 @@ out strError);
                 XmlNodeList nodes = this.AllDatabaseDom.DocumentElement.SelectNodes("database[@type='biblio']");
                 foreach (XmlElement node in nodes)
                 {
-                    string strName = node.GetAttribute( "name");
-                    string strType = node.GetAttribute( "type");
+                    string strName = node.GetAttribute("name");
+                    string strType = node.GetAttribute("type");
                     // string strRole = DomUtil.GetAttr(node, "role");
                     // string strLibraryCode = DomUtil.GetAttr(node, "libraryCode");
 
                     BiblioDbProperty property = new BiblioDbProperty();
                     BiblioDbProperties.Add(property);
-                    property.DbName = node.GetAttribute( "name");
-                    property.ItemDbName = node.GetAttribute( "entityDbName");
-                    property.Syntax = node.GetAttribute( "syntax");
-                    property.IssueDbName = node.GetAttribute( "issueDbName");
+                    property.DbName = node.GetAttribute("name");
+                    property.ItemDbName = node.GetAttribute("entityDbName");
+                    property.Syntax = node.GetAttribute("syntax");
+                    property.IssueDbName = node.GetAttribute("issueDbName");
                     property.OrderDbName = node.GetAttribute("orderDbName");
-                    property.CommentDbName = node.GetAttribute( "commentDbName");
-                    property.Role = node.GetAttribute( "role");
+                    property.CommentDbName = node.GetAttribute("commentDbName");
+                    property.Role = node.GetAttribute("role");
 
                     bool bValue = true;
                     nRet = node.GetBooleanParam(
@@ -384,8 +386,9 @@ out string strValue,
 out strError);
             */
             var result = channel.ManageDatabaseAsync(
-                new ManageDatabaseRequest { 
-                StrAction = "getinfo",
+                new ManageDatabaseRequest
+                {
+                    StrAction = "getinfo",
                 }
                 ).Result;
             lRet = result.ManageDatabaseResult.Value;
@@ -681,6 +684,7 @@ out strError);
         public int BuildFirstPlan(string strTypeList,
             LibraryChannel channel,
             Delegate_showMessage func_showMessage,
+            CancellationToken token,
             out XmlDocument task_dom,
             out string strError)
         {
@@ -700,12 +704,16 @@ out strError);
 
             // 记载首次创建的结束时间点
             task_dom.DocumentElement.SetAttribute("end_date", strEndDate);
+            // 2023/9/7
+            task_dom.DocumentElement.SetAttribute("accessLog_end_date", strEndDate);
+
+            if (token.IsCancellationRequested)
+                goto CANCEL;
 
             // *** 创建用户表
             if (strTypeList == "*"
                 || StringUtil.IsInList("user", strTypeList) == true)
             {
-
                 XmlNode node = task_dom.CreateElement("user");
                 task_dom.DocumentElement.AppendChild(node);
             }
@@ -720,6 +728,9 @@ out strError);
                 // 获得每个实体库的尺寸
                 foreach (string strItemDbName in item_dbnames)
                 {
+                    if (token.IsCancellationRequested)
+                        goto CANCEL;
+
                     func_showMessage?.Invoke("正在计划任务 检索 " + strItemDbName + " ...");
 
                     /*
@@ -737,7 +748,8 @@ out strError);
         out strError);
                     */
                     var result = channel.SearchItemAsync(
-                        new SearchItemRequest { 
+                        new SearchItemRequest
+                        {
                             StrItemDbName = strItemDbName,
                             StrQueryWord = "",
                             NPerMax = -1,
@@ -764,6 +776,9 @@ out strError);
                 }
             }
 
+            if (token.IsCancellationRequested)
+                goto CANCEL;
+
             // *** 创建 reader 表
             if (strTypeList == "*"
                 || StringUtil.IsInList("reader", strTypeList) == true)
@@ -774,8 +789,11 @@ out strError);
                 // 
                 foreach (string strReaderDbName in reader_dbnames)
                 {
+                    if (token.IsCancellationRequested)
+                        goto CANCEL;
+
                     func_showMessage?.Invoke("正在计划任务 检索 " + strReaderDbName + " ...");
-                    
+
                     /*
                     // 此处检索仅获得命中数即可
                     lRet = channel.SearchReader(null,
@@ -790,15 +808,16 @@ out strError);
         out strError);
                     */
                     var result = channel.SearchReaderAsync(
-                        new SearchReaderRequest { 
-                        StrReaderDbNames = strReaderDbName,
-                        StrQueryWord = "",
-                        NPerMax = -1,
-                        StrFrom = "__id",
-                        StrMatchStyle = "left",
-                        StrLang = "zh",
-                        StrResultSetName = null,
-                        StrOutputStyle = "",
+                        new SearchReaderRequest
+                        {
+                            StrReaderDbNames = strReaderDbName,
+                            StrQueryWord = "",
+                            NPerMax = -1,
+                            StrFrom = "__id",
+                            StrMatchStyle = "left",
+                            StrLang = "zh",
+                            StrResultSetName = null,
+                            StrOutputStyle = "",
                         }
                         ).Result;
                     lRet = result.SearchReaderResult.Value;
@@ -815,6 +834,9 @@ out strError);
                     node.SetAttribute("count", lRet.ToString());
                 }
             }
+
+            if (token.IsCancellationRequested)
+                goto CANCEL;
 
             // *** 创建 biblio 表
             // *** 创建 class 表
@@ -874,6 +896,9 @@ out strError);
                 //
                 foreach (string strBiblioDbName in biblio_dbnames)
                 {
+                    if (token.IsCancellationRequested)
+                        goto CANCEL;
+
                     func_showMessage?.Invoke("正在计划任务 检索 " + strBiblioDbName + " ...");
                     string strQueryXml = "";
                     /*
@@ -893,17 +918,18 @@ out strError);
                         out strError);
                     */
                     var result = channel.SearchBiblioAsync(
-                        new SearchBiblioRequest { 
-                        StrBiblioDbNames = strBiblioDbName,
-                        StrQueryWord = "",
-                        NPerMax = -1,
-                        StrFromStyle = "recid",
-                        StrMatchStyle = "left",
-                        StrLang = "zh",
-                        StrResultSetName = null,
-                        StrSearchStyle = "",
-                        StrOutputStyle = "",
-                        StrLocationFilter = "",
+                        new SearchBiblioRequest
+                        {
+                            StrBiblioDbNames = strBiblioDbName,
+                            StrQueryWord = "",
+                            NPerMax = -1,
+                            StrFromStyle = "recid",
+                            StrMatchStyle = "left",
+                            StrLang = "zh",
+                            StrResultSetName = null,
+                            StrSearchStyle = "",
+                            StrOutputStyle = "",
+                            StrLocationFilter = "",
                         }
                         ).Result;
                     lRet = result.SearchBiblioResult.Value;
@@ -958,7 +984,8 @@ out strError);
                 }
             }
 
-
+            if (token.IsCancellationRequested)
+                goto CANCEL;
 
             // *** 创建日志表
             if (strTypeList == "*"
@@ -1016,9 +1043,15 @@ out strError);
                     task_dom.DocumentElement.AppendChild(node);
 
                     node.SetAttribute("start_date", strFirstDate);  // "20060101"
-                    node.SetAttribute("end_date", strEndDate + ":0-" + (lCount - 1).ToString());
+                    if (lCount > 0)
+                        node.SetAttribute("end_date", $"{strEndDate}:0-{(lCount - 1)}");
+                    else
+                        node.SetAttribute("end_date", $"{strEndDate}:0-");
                 }
             }
+
+            if (token.IsCancellationRequested)
+                goto CANCEL;
 
             // *** 创建访问日志表
             if (strTypeList == "*"
@@ -1067,11 +1100,18 @@ out strError);
                     task_dom.DocumentElement.AppendChild(node);
 
                     node.SetAttribute("start_date", strFirstDate);  // "20060101"
-                    node.SetAttribute("end_date", strEndDate + ":0-" + (lCount - 1).ToString());
+                    // node.SetAttribute("end_date", strEndDate + ":0-" + (lCount - 1).ToString());
+                    if (lCount > 0)
+                        node.SetAttribute("end_date", $"{strEndDate}:0-{(lCount - 1)}");
+                    else
+                        node.SetAttribute("end_date", $"{strEndDate}:0-");
                 }
             }
 
             return 0;
+        CANCEL:
+            strError = "用户中断";
+            return -1;
         }
 
         // 获得第一个(实有的)日志文件日期
@@ -1088,7 +1128,8 @@ out strError);
             strFirstDate = "";
             strError = "";
 
-            /*DigitalPlatform.LibraryClient.localhost.*/OperLogInfo[]? records = null;
+            /*DigitalPlatform.LibraryClient.localhost.*/
+            OperLogInfo[]? records = null;
 
             List<string> dates = new List<string>();
             List<string> styles = new List<string>();
@@ -1123,7 +1164,8 @@ out strError);
                     out strError);
                 */
                 var result = channel.GetOperLogsAsync(
-                    new GetOperLogsRequest { 
+                    new GetOperLogsRequest
+                    {
                         StrFileName = "",
                         LIndex = 0,
                         LHint = -1,
@@ -1289,7 +1331,7 @@ out strError);
                     if (node.Name == "database")
                     {
                         string strDbName = node.GetAttribute("name");
-                        string strType = node.GetAttribute( "type");
+                        string strType = node.GetAttribute("type");
                         string strState = node.GetAttribute("state");
 
                         nRet = node.GetIntegerParam(
@@ -1383,7 +1425,7 @@ out strError);
                                 }
                                 catch
                                 {
-                                    node.SetAttribute( "index", lIndex.ToString());
+                                    node.SetAttribute("index", lIndex.ToString());
                                     throw;
                                 }
                                 if (nRet == -1)
@@ -1469,14 +1511,56 @@ out strError);
                         }
                     }
 
+                    string strToday = DateTimeUtil.DateTimeToString8(DateTime.Now);
+                    string? strGlobalState = task_dom.DocumentElement?.GetAttribute("state");
+
+                    //string strStartDate = "";
+                    //string strEndDate = "";
+
+                    // 为 daily 模式准备好 strStartDate 和 strEndDate 参数
+                    // parameters:
+                    //          strPrefix log类型前缀。"" 或 "accessLog_"
+                    void PrepareDaily(XmlDocument dom,
+                        string strPrefix,
+                        ref string strStartDate,
+                        ref string strEndDate)
+                    {
+                        if (strGlobalState == "daily")
+                        {
+                            strEndDate = dom.DocumentElement.GetAttribute(strPrefix + "end_date");
+                            if (string.IsNullOrEmpty(strEndDate))
+                            {
+                                // 无法处理
+                                strStartDate = "";
+                                strEndDate = "";
+                                return;
+                            }
+                            string index = dom.DocumentElement.GetAttribute(strPrefix + "index");
+                            if (string.IsNullOrEmpty(index))
+                                index = "0";
+                            strStartDate = strEndDate + ":" + index + "-";
+                            strEndDate = strToday;
+                        }
+                    }
+
+                    void WriteDailyBreakPoint(
+                        XmlDocument dom,
+                        string strPrefix,
+                        string strEndDate,
+                        long lIndex)
+                    {
+                        dom.DocumentElement?.SetAttribute(strPrefix + "end_date", strEndDate);
+                        dom.DocumentElement?.SetAttribute(strPrefix + "index", lIndex.ToString());
+                    }
+
                     if (node.Name == "operlog")
                     {
                         string strTableInitilized = node.GetAttribute(
                             "initial_tables");
 
-                        string strStartDate = node.GetAttribute( "start_date");
-                        string strEndDate = node.GetAttribute( "end_date");
-                        string strState = node.GetAttribute( "state");
+                        string strStartDate = node.GetAttribute("start_date");
+                        string strEndDate = node.GetAttribute("end_date");
+                        string strState = node.GetAttribute("state");
 
                         if (string.IsNullOrEmpty(strStartDate) == true)
                         {
@@ -1484,6 +1568,7 @@ out strError);
                             strError = "start_date 属性值不应为空: " + node.OuterXml;
                             return -1;
                         }
+
                         if (string.IsNullOrEmpty(strEndDate) == true)
                         {
                             // strEndDate = DateTimeUtil.DateTimeToString8(DateTime.Now);
@@ -1493,40 +1578,79 @@ out strError);
 
                         if (strTableInitilized != "finish")
                         {
-                            // stop.SetMessage("正在初始化本地数据库的日志表 ...");
-                            /*
-                            nRet = CreateOperLogTables(out strError);
-                            if (nRet == -1)
-                                return -1;
-                                */
-                            node.SetAttribute(
-                                "initial_tables", "finish");
+                            node.SetAttribute("initial_tables", "finish");
                         }
 
-                        if (strState != "finish")
+                        if (strState != "finish"
+                            || strGlobalState == "daily")
                         {
-                            // TODO: 中断时断点记载
-                            // TODO: 进度条应该是重新设置的
-                            nRet = DoCreateOperLogTable(
-                                ref context,
-                                channel,
-                                -1,
-                                strStartDate,
-                                strEndDate,
-                                LogType.OperLog,
-                                false,
-                                func_showMessage,
-                                token,
-                                out string strLastDate,
-                                out long lLastIndex,
-                                out strError);
-                            if (nRet == -1)
+                            PrepareDaily(task_dom,
+                                "",
+                                ref strStartDate,
+                                ref strEndDate);
+                            if (string.IsNullOrEmpty(strStartDate) == false)
+                            {
+
+                                // TODO: 中断时断点记载
+                                // TODO: 进度条应该是重新设置的
+                                nRet = DoCreateOperLogTable(
+                                    ref context,
+                                    channel,
+                                    -1,
+                                    strStartDate,
+                                    strEndDate,
+                                    LogType.OperLog,
+                                    strGlobalState == "daily" ? true : false,
+                                    func_showMessage,
+                                    token,
+                                    out string strLastDate,
+                                    out long lLastIndex,
+                                    out strError);
+                                if (nRet == -1)
+                                {
+                                    if (string.IsNullOrEmpty(strLastDate) == false)
+                                        node.SetAttribute("start_date", strLastDate + ":" + lLastIndex.ToString() + "-");
+                                    return -1;
+                                }
+                                node.SetAttribute("state", "finish");
+
+                                // 写入每日同步断点信息
+                                if (strGlobalState == "daily")
+                                {
+                                    // 如果结束的日期小于今天
+                                    if (nRet == 1   // 正常完成
+                                        && string.Compare(strLastDate, strToday) < 0)
+                                    {
+                                        // 把断点设置为今天的开始
+                                        strLastDate = strToday;
+                                        lLastIndex = 0;
+                                    }
+                                    if (string.IsNullOrEmpty(strLastDate) == false
+                                    && lLastIndex != -1)
+                                    {
+                                        WriteDailyBreakPoint(task_dom,
+                                            "",
+                                            strLastDate,
+                                            lLastIndex);
+                                    }
+                                }
+#if REMOVED
+                            // 2023/9/6
+                            // 从 finish 修改为 daily 状态
                             {
                                 if (string.IsNullOrEmpty(strLastDate) == false)
-                                    node.SetAttribute( "start_date", strLastDate + ":" + lLastIndex.ToString() + "-");
-                                return -1;
+                                    node.SetAttribute("start_date", strLastDate + ":" + lLastIndex.ToString() + "-");
+                                else
+                                {
+                                    // 取冒号左边的部分
+                                    var parts = StringUtil.ParseTwoPart(strEndDate, ":");
+                                    node.SetAttribute("start_date", parts[0]);
+                                }
+                                node.SetAttribute("end_date", "");
+                                node.SetAttribute("state", "daily");
                             }
-                            node.SetAttribute( "state", "finish");
+#endif
+                            }
                         }
                     }
 
@@ -1535,9 +1659,11 @@ out strError);
                         string strTableInitilized = node.GetAttribute(
     "initial_tables");
 
-                        string strStartDate = node.GetAttribute( "start_date");
+                        string strStartDate = node.GetAttribute("start_date");
                         string strEndDate = node.GetAttribute("end_date");
-                        string strState = node.GetAttribute( "state");
+                        string strState = node.GetAttribute("state");
+
+                        Debug.Assert(strEndDate.EndsWith(":0--1") == false);
 
                         if (string.IsNullOrEmpty(strStartDate) == true)
                         {
@@ -1553,36 +1679,80 @@ out strError);
                         if (strTableInitilized != "finish")
                         {
                             // 前面应该已经初始化过了
-                            node.SetAttribute(
-                                "initial_tables", "finish");
+                            node.SetAttribute("initial_tables", "finish");
                         }
 
-                        if (strState != "finish")
+                        if (strState != "finish"
+                            || strGlobalState == "daily")
                         {
-                            string strLastDate = "";
-                            long lLastIndex = 0;
-                            // TODO: 中断时断点记载
-                            // TODO: 进度条应该是重新设置的
-                            nRet = DoCreateOperLogTable(
-                                ref context,
-                                channel,
-                                -1,
-                                strStartDate,
-                                strEndDate,
-                                LogType.AccessLog,
-                                false,
-                                func_showMessage,
-                                token,
-                                out strLastDate,
-                                out lLastIndex,
-                                out strError);
-                            if (nRet == -1)
+                            PrepareDaily(task_dom,
+                                "accessLog_",
+                                ref strStartDate,
+                                ref strEndDate);
+                            if (string.IsNullOrEmpty(strStartDate) == false)
+                            {
+                                string strLastDate = "";
+                                long lLastIndex = 0;
+                                // TODO: 中断时断点记载
+                                // TODO: 进度条应该是重新设置的
+                                nRet = DoCreateOperLogTable(
+                                    ref context,
+                                    channel,
+                                    -1,
+                                    strStartDate,
+                                    strEndDate,
+                                    LogType.AccessLog,
+                                    strGlobalState == "daily" ? true : false,
+                                    func_showMessage,
+                                    token,
+                                    out strLastDate,
+                                    out lLastIndex,
+                                    out strError);
+                                if (nRet == -1)
+                                {
+                                    if (string.IsNullOrEmpty(strLastDate) == false)
+                                        node.SetAttribute("start_date", strLastDate + ":" + lLastIndex.ToString() + "-");
+                                    return -1;
+                                }
+                                node.SetAttribute("state", "finish");
+
+                                // 写入每日同步断点信息
+                                if (strGlobalState == "daily")
+                                {
+                                    // 如果结束的日期小于今天
+                                    if (nRet == 1   // 正常完成
+                                        && string.Compare(strLastDate, strToday) < 0)
+                                    {
+                                        // 把断点设置为今天的开始
+                                        strLastDate = strToday;
+                                        lLastIndex = 0;
+                                    }
+                                    if (string.IsNullOrEmpty(strLastDate) == false
+                                    && lLastIndex != -1)
+                                    {
+                                        WriteDailyBreakPoint(task_dom,
+                                            "accessLog_",
+                                            strLastDate,
+                                            lLastIndex);
+                                    }
+                                }
+#if REMOVED
+                            // 2023/9/6
+                            // 从 finish 修改为 daily 状态
                             {
                                 if (string.IsNullOrEmpty(strLastDate) == false)
-                                    node.SetAttribute( "start_date", strLastDate + ":" + lLastIndex.ToString() + "-");
-                                return -1;
+                                    node.SetAttribute("start_date", strLastDate + ":" + lLastIndex.ToString() + "-");
+                                else
+                                {
+                                    // 取冒号左边的部分
+                                    var parts = StringUtil.ParseTwoPart(strEndDate, ":");
+                                    node.SetAttribute("start_date", parts[0]);
+                                }
+                                node.SetAttribute("end_date", "");
+                                node.SetAttribute("state", "daily");
                             }
-                            node.SetAttribute( "state", "finish");
+#endif
+                            }
                         }
                     }
                 }
@@ -1603,6 +1773,70 @@ out strError);
                     context.Dispose();
             }
         }
+
+#if REMOVED
+        /*
+         * 当根元素的 state 属性值为 daily，此时开始进入每日同步阶段。
+         * 把 operlog 和 accesslog 元素的 start_date 属性修改为 end_date 属性值，
+         * 然后把 state 属性值从 “finish” 改为 “daily”
+         * 这样就可以控制 Replication() 函数执行每日同步。
+         * 每日同步的启动条件：
+         * 1) state 属性值为 "daily";
+         * 2) DoCreateOperLogTable() 的 bTraceLogRecord 为 true 调用，这样才会跟踪日志动作。
+         *  
+         例如:
+            <operlog start_date="20190427" end_date="20230906:0-0" state="finish" />
+            <accesslog start_date="20200407" end_date="20230906:0-" state="finish" />
+         变换为
+            <operlog start_date="20230906:1-" end_date="今天最后位置" state="daily" />
+            <accesslog start_date="20230906:0-" end_date="今天最后位置" state="daily" />
+
+         * */
+        // 读入断点信息
+        // return:
+        //      -1  出错
+        //      0   正常
+        //      1   首次创建尚未完成
+        int LoadDailyBreakPoint(
+            XmlDocument dom,
+            LogType logType,
+            out string strEndDate,
+            out long lIndex,
+            out string strState,
+            out string strError)
+        {
+            strError = "";
+            strEndDate = "";
+            strState = "";
+            lIndex = 0;
+
+            if (dom.DocumentElement == null)
+            {
+                strError = "dom.DocumentElement == null";
+                return -1;
+            }
+
+            string strPrefix = "";
+            if ((logType & LogType.AccessLog) != 0)
+                strPrefix = "accessLog_";
+
+            strEndDate = dom.DocumentElement.GetAttribute(strPrefix + "end_date");
+            int nRet = DomUtil.GetIntegerParam(dom.DocumentElement, strPrefix + "index",
+                0,
+                out lIndex,
+                out strError);
+            if (nRet == -1)
+                return -1;
+
+            // state 元素中的状态，是首次创建本地缓存后总体的状态，是操作日志和访问日志都复制过来以后，才会设置为 "daily" 
+            strState = dom.DocumentElement.GetAttribute(
+                "state");
+            if (strState != "daily")
+                return 1;   // 首次创建尚未完成
+            return 0;
+        }
+
+#endif
 
         public static string GetResultSetName()
         {
@@ -1659,7 +1893,8 @@ out strError);
                     out strError);
                 */
                 var result = channel.GetUserAsync(
-                    new GetUserRequest {
+                    new GetUserRequest
+                    {
                         StrAction = "list",
                         StrName = "",
                         NStart = nStart,
@@ -2617,6 +2852,13 @@ LibraryChannel channel,
 
 
         // 根据日志文件创建本地 operlogxxx 表
+        // parameters:
+        //      strLastDate   处理中断或者结束时返回最后处理过的日期
+        //      last_index  处理或中断返回时最后处理过的位置。以后继续处理的时候可以从这个偏移开始
+        // return:
+        //      -1  出错
+        //      0   中断
+        //      1   完成
         public int DoCreateOperLogTable(
             ref LibraryContext context,
             LibraryChannel channel,
@@ -2636,6 +2878,7 @@ LibraryChannel channel,
             lLastIndex = 0;
 
             int nRet = 0;
+            bool bUserChanged = false;
 
             // strEndDate 里面可能会包含 ":0-99" 这样的附加成分
             string strLeft = "";
@@ -2724,6 +2967,11 @@ LibraryChannel channel,
                 int nProcessCount = 0;
                 string prev_date = "";
                 int nRecCount = 0;
+
+                // 2023/9/7
+                string strLastItemDate = "";
+                long lLastItemIndex = -1;
+
                 foreach (OperLogItem item in loader)
                 {
                     if (token.IsCancellationRequested)
@@ -2743,7 +2991,7 @@ LibraryChannel channel,
                     if (string.IsNullOrEmpty(strXml) == true)
                     {
                         nRecCount++;
-                        continue;
+                        goto CONTINUE;
                     }
 
                     {
@@ -2773,11 +3021,17 @@ LibraryChannel channel,
                             if (result == DialogResult.No)
                                 return -1;
                                 */
-                            continue;
+                            goto CONTINUE;
                         }
 
                         string strOperation = dom.DocumentElement.GetElementText("operation");
                         string strAction = dom.DocumentElement.GetElementText("action");
+
+                        if (strOperation == "setUser")
+                        {
+                            bUserChanged = true;
+                            goto CONTINUE;
+                        }
 
                         OperLogItem current_item = item;
                         if (StringUtil.CompareVersion(this.ServerVersion, "2.74") < 0
@@ -2872,6 +3126,12 @@ LibraryChannel channel,
                     }
 
                     nRecCount++;
+
+                CONTINUE:
+                    // 便于循环外获得这些值
+                    strLastItemDate = item.Date;
+                    lLastItemIndex = item.Index + 1;
+
                 } // end of foreach
 
                 if (opers.Count > 0)
@@ -2886,10 +3146,28 @@ LibraryChannel channel,
                     context.SaveChanges();
                     */
 
+                /*
                 // 表示处理完成
                 strLastDate = "";
                 lLastIndex = 0;
-                return 0;
+                */
+                // 记忆
+                strLastDate = strLastItemDate;
+                lLastIndex = lLastItemIndex;
+
+                // 2023/9/7
+                if (bUserChanged && bTraceLogRecord)
+                {
+                    nRet = DoCreateUserTable(
+                        ref context,
+                        channel,
+                        func_showMessage,
+                        out strError);
+                    if (nRet == -1)
+                        return -1;
+                }
+
+                return 1;
             }
             catch (Exception ex)
             {
@@ -2924,6 +3202,7 @@ LibraryChannel channel,
                     }
                     context.SaveChanges();
                     dbContextTransaction.Commit();
+                    goto END1;
                 }
                 catch (Exception ex)
                 {
@@ -2932,10 +3211,23 @@ LibraryChannel channel,
                     // Rollback() 本身也可能再次抛异常
                     dbContextTransaction.Rollback(); //Required according to MSDN article 
                                                      // TODO: 写入错误日志
-                    throw ex;
+                                                     // throw ex;
                 }
             }
 
+            // 改为逐条探索是否存在
+            {
+                foreach (var line in lines)
+                {
+                    var exist = context.Find(line.GetType(),
+                        line.Date, line.No, line.SubNo);
+                    if (exist != null)
+                        context.Remove(exist);
+                    context.AddOrUpdate(line);
+                }
+            }
+
+        END1:
             context.Dispose();
             context = new LibraryContext(context.DatabaseConfig);
 
@@ -3199,8 +3491,6 @@ LibraryChannel channel,
 
             using (var dbContextTransaction = context.Database.BeginTransaction())
             {
-
-                //long lRet = 0;
                 int nRet = 0;
 
                 string strAction = domLog.DocumentElement.GetElementText(
@@ -3228,10 +3518,12 @@ LibraryChannel channel,
                     // 把分类号写入若干分类号表
                     try
                     {
+                        // Debug.Assert(strRecPath != "中文图书/611");
                         Biblio.UpdateBiblioRecord(
                 context,
                 strRecPath,
-                strRecord);
+                strRecord,
+                true);
                     }
                     catch (Exception ex)
                     {
@@ -3299,7 +3591,8 @@ LibraryChannel channel,
                             Biblio.UpdateBiblioRecord(
                     context,
                     strTargetRecPath,
-                    strTargetRecord);
+                    strTargetRecord,
+                    true);
                         }
                         catch (Exception ex)
                         {
@@ -3315,28 +3608,45 @@ LibraryChannel channel,
                     if (strAction == "move"
                     || strAction == "copy")
                     {
-                        nRet = CopySubRecords(
-                            context,
-                            domLog,
-                            strAction,
-                            // string strSourceBiblioRecPath,
-                            strTargetRecPath,
-                            out strError);
-                        if (nRet == -1)
+                        try
+                        {
+                            nRet = CopySubRecords(
+                                context,
+                                domLog,
+                                strAction,
+                                strTargetRecPath,
+                                true,   // saveChanges
+                                out strError);
+                            if (nRet == -1)
+                                return -1;
+                        }
+                        catch (Exception ex)
+                        {
+                            strError = "TraceSetBiblioInfo() 出现异常: " + ex.Message;
                             return -1;
+                        }
                     }
 
                     if (strAction == "move" || strAction == "onlymovebiblio")
                     {
-                        // 删除旧的书目记录
-                        nRet = DeleteBiblioRecord(
-                            context,
-                            strOldRecPath,
-                            true,
-                            true,
-                            out strError);
-                        if (nRet == -1)
+                        try
+                        {
+                            // 删除旧的书目记录
+                            nRet = DeleteBiblioRecord(
+                                context,
+                                strOldRecPath,
+                                true,
+                                true,
+                                true,   // saveChanges
+                                out strError);
+                            if (nRet == -1)
+                                return -1;
+                        }
+                        catch (Exception ex)
+                        {
+                            strError = "TraceSetBiblioInfo() 出现异常: " + ex.Message;
                             return -1;
+                        }
                     }
                 }
                 else if (strAction == "delete"
@@ -3355,15 +3665,24 @@ LibraryChannel channel,
 
                     if (string.IsNullOrEmpty(strRecPath) == false)
                     {
-                        // 删除书目记录
-                        nRet = DeleteBiblioRecord(
-                            context,
-                            strRecPath,
-                            strAction == "delete" || strAction == "onlydeletebiblio" ? true : false,
-                            strAction == "delete" || strAction == "onlydeletesubrecord" ? true : false,
-                            out strError);
-                        if (nRet == -1)
+                        try
+                        {
+                            // 删除书目记录
+                            nRet = DeleteBiblioRecord(
+                                context,
+                                strRecPath,
+                                strAction == "delete" || strAction == "onlydeletebiblio" ? true : false,
+                                strAction == "delete" || strAction == "onlydeletesubrecord" ? true : false,
+                                true,
+                                out strError);
+                            if (nRet == -1)
+                                return -1;
+                        }
+                        catch (Exception ex)
+                        {
+                            strError = "TraceSetBiblioInfo() 出现异常: " + ex.Message;
                             return -1;
+                        }
                     }
                 }
 
@@ -3379,6 +3698,7 @@ LibraryChannel channel,
             XmlDocument dom,
             string strAction,
             string strTargetBiblioRecPath,
+            bool saveChanges,
             out string strError)
         {
             strError = "";
@@ -3497,6 +3817,8 @@ LibraryChannel channel,
                 }
             }
 
+            if (saveChanges)
+                context.SaveChanges();
             return 0;
         }
 
@@ -3505,6 +3827,7 @@ LibraryChannel channel,
     string strBiblioRecPath,
     bool bDeleteBiblio,
     bool bDeleteSubrecord,
+    bool saveChanges,
     out string strError)
         {
             strError = "";
@@ -3529,6 +3852,8 @@ LibraryChannel channel,
                     context.Items.RemoveRange(items);
             }
 
+            if (saveChanges)
+                context.SaveChanges();
             return 1;
         }
 
@@ -4002,7 +4327,8 @@ out string strError)
                     {
                         CircuOper oper = opers[0] as CircuOper;
                         Debug.Assert(oper != null);
-                        Debug.Assert(string.IsNullOrEmpty(oper.BorrowID));
+                        // ??
+                        // Debug.Assert(string.IsNullOrEmpty(oper.BorrowID));
                         oper.BorrowID = strBorrowID;
                     }
                 }
@@ -4077,10 +4403,10 @@ out string strError)
 
          * */
         public int TraceReturn(
-LibraryContext context,
-XmlDocument domLog,
+            LibraryContext context,
+            XmlDocument domLog,
             List<OperBase> opers,
-out string strError)
+            out string strError)
         {
             strError = "";
 
@@ -4122,14 +4448,20 @@ out string strError)
                 {
                     // 2021/10/15
                     // 如果必要，修改日志动作对象
+                    if (string.IsNullOrEmpty(item.BorrowID) == false)
                     {
                         Debug.Assert(string.IsNullOrEmpty(item.BorrowID) == false);
-                        CircuOper oper = opers[0] as CircuOper;
-                        Debug.Assert(oper != null);
-                        if (string.IsNullOrEmpty(oper.BorrowID)
-                            && item.Borrower == strReaderBarcode)
-                            oper.BorrowID = item.BorrowID;
+                        CircuOper? oper = opers[0] as CircuOper;
+                        if (oper != null)
+                        {
+                            Debug.Assert(oper != null);
+                            if (string.IsNullOrEmpty(oper.BorrowID)
+                                && item.Borrower == strReaderBarcode)
+                                oper.BorrowID = item.BorrowID;
+                        }
                     }
+
+                    // TODO: 如果册记录中本来就没有 BorrowID，是否还要主动发生一个随机的 BorrowID?
 
                     if (string.IsNullOrEmpty(item.ItemBarcode))
                         item.ItemBarcode = strItemBarcode;

@@ -1,0 +1,15 @@
+﻿@{
+    ViewBag.Title = "用户信息";
+    string? userName = Context.Session.GetString("UserName");
+}
+
+<fieldset>
+    <legend>用户信息</legend>
+
+    @if (userName != null)
+    {
+        <text>
+            欢迎您 @userName.ToString()
+        </text>
+    }
+</fieldset>

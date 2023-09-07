@@ -7,6 +7,7 @@ using System.Text;
 
 using DigitalPlatform.Marc;
 using DigitalPlatform.Text;
+using Microsoft.EntityFrameworkCore;
 
 namespace DigitalPlatform.LibraryServer.Reporting
 {
@@ -112,6 +113,12 @@ out strError);
         {
             if (this.Keys == null)
                 this.Keys = new List<Key>();
+            
+            if (this.Keys.Count > 0)
+            {
+                int i = 0;
+                i++;
+            }
 
             int nRet = MarcUtil.Xml2Marc(strXml,
     false,
@@ -205,7 +212,10 @@ strBiblioRecPath,
                 target.Remove(key);
             }
 
-            target.AddRange(new_keys);
+            if (new_keys.Count > 0)
+            {
+                target.AddRange(new_keys);
+            }
         }
 
 
@@ -307,16 +317,33 @@ strBiblioRecPath,
                 return 0;
                 */
 
-            var biblio = context.Biblios.SingleOrDefault(c => c.RecPath == strBiblioRecPath)
+            var biblio = context.Biblios.Include(biblio => biblio.Keys).SingleOrDefault(c => c.RecPath == strBiblioRecPath)
 ?? new Biblio { RecPath = strBiblioRecPath };
 
-            Debug.Assert(biblio.RecPath == strBiblioRecPath);
+            /*
+            var biblio = context.Biblios.SingleOrDefault(c => c.RecPath == strBiblioRecPath);
+            if (biblio == null)
+            {
+                biblio = new Biblio { RecPath = strBiblioRecPath };
+                context.Biblios.Add(biblio);
+            }
+            */
 
-            biblio.RecPath = strBiblioRecPath;
-            // TODO: 注意检查极限长度
-            biblio.Xml = strBiblioXml;
-            biblio.Create(biblio.Xml, biblio.RecPath);
-            context.AddOrUpdate(biblio);
+            /*
+            context.Entry(blog)
+        .Collection(b => b.Posts)
+        .Load();
+            */
+
+            {
+                Debug.Assert(biblio.RecPath == strBiblioRecPath);
+
+                biblio.RecPath = strBiblioRecPath;
+                // TODO: 注意检查极限长度
+                biblio.Xml = strBiblioXml;
+                biblio.Create(biblio.Xml, biblio.RecPath);
+                context.AddOrUpdate(biblio);
+            }
             if (saveChanges)
                 context.SaveChanges();
         }

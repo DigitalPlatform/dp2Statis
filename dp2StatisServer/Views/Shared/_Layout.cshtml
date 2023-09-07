@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - dp2StatisServer</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/dp2StatisServer.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://unpkg.com/@@picocss/pico@latest/css/pico.min.css" />
+    <link rel="stylesheet" href="~/lib/font-awesome/css/font-awesome.min.css">
+</head>
+<body>
+    <main class="container">
+        <header>
+            <nav>
+                <ul>
+                    <li><strong>dp2 统计中心</strong></li>
+                </ul>
+                <ul>
+                    @{
+                        string? userName = Context.Session.GetString("UserName");
+                    }
+                    <li><a asp-controller="Instance" asp-action="Index">统计</a></li>
+                    <li><a asp-controller="Home" asp-action="Create">创建</a></li>
+                    <li><a asp-controller="swagger" asp-action="">API</a></li>
+                    <li><a asp-controller="Manage" asp-action="Index">管理</a></li>
+                    <li><a asp-controller="Journal" asp-action="Index">日志</a></li>
+                    <li><a asp-controller="Home" asp-action="About">关于</a></li>
+                    @if (string.IsNullOrEmpty(userName))
+                    {
+                        <li><a asp-controller="Home" asp-action="Login">登录</a></li>
+                    }
+                    else
+                    {
+                        <li><a asp-controller="Home" asp-action="Logout">登出(@userName)</a></li>
+                    }
+                </ul>
+            </nav>
+        </header>
+        <!-- <main role="main" class="pb-3">-->
+        @RenderBody()
+
+
+        <footer>
+            <hr />
+            <div class="container">
+                dp2 统计中心 - <a asp-controller="Home" asp-action="About">About</a>
+            </div>
+        </footer>
+    </main>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

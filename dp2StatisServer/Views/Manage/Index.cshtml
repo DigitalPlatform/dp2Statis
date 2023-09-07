@@ -1,0 +1,79 @@
+﻿@model dp2StatisServer.ViewModels.ManageViewModel
+@{
+    ViewBag.Title = "管理";
+}
+<article>
+    <header>管理</header>
+
+    @if (string.IsNullOrEmpty(Model.ErrorInfo) == false)
+    {
+        <div>
+            <textarea asp-for="ErrorInfo" class="text-danger"></textarea>
+        </div>
+    }
+
+    @if (string.IsNullOrEmpty(Model.SuccessInfo) == false)
+    {
+        <div>
+            <textarea asp-for="SuccessInfo" class="text-primary text-success"></textarea>
+        </div>
+    }
+
+    <table class="w-100" role="grid">
+        <tr>
+            <td colspan="2" class="text-primary">
+                概况
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label asp-for="DataDirRoot">
+                </label>
+            </td>
+            <td>
+                <span>@Model.DataDirRoot?.ToString()</span>
+            </td>
+        </tr>
+    </table>
+
+    <figure>
+        <table class="w-100" role="grid">
+            <thead>
+                <tr>
+                    <th class="text-nowrap">实例名</th>
+                    <th class="text-nowrap">数据目录</th>
+                    <th class="text-nowrap">dp2library URL</th>
+                    <th class="text-nowrap">pgsql 用户名</th>
+                    <th class="text-nowrap">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var instance in Model.Instances)
+                {
+                    <tr>
+                        <td class="text-nowrap">@instance.Name</td>
+                        <td class="text-nowrap">@instance.DataDir</td>
+                        <td class="text-nowrap">@instance.AppServerUrl</td>
+                        <td class="text-nowrap">@instance.DbConfig?.UserName</td>
+                        <td class="text-nowrap">
+                            <a asp-action="ChangeInstance"
+                               asp-route-name="@instance.Name"
+                               class="btn btn-primary btn-block w-100">修改</a>
+
+                            <a asp-action="DeleteInstance"
+                               asp-route-name="@instance.Name"
+                               class="btn btn-danger btn-block w-100">删除</a>
+
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </figure>
+
+    <fieldset>
+        <a asp-action="CreateInstance" class="btn btn-primary btn-block w-100">创建实例</a>
+    </fieldset>
+
+</article>
+

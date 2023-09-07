@@ -41,6 +41,7 @@ namespace DigitalPlatform.LibraryServer.Reporting
         // 比对两个 Key 的值是否完全相等
         public static bool IsEqual(Key key1, Key key2)
         {
+            // TODO: Text 是否要忽略大小写进行比较？
             if (key1.Text == key2.Text
                 && key1.Type == key2.Type
                 && key1.BiblioRecPath == key2.BiblioRecPath

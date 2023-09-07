@@ -1,0 +1,10 @@
+<root version="0.11" state="daily" end_date="20230907" index="1" accessLog_end_date="20230907" first_operlog_date="20190427" first_accesslog_date="20200407" initial_tables="finish" accessLog_index="0">
+  <user state="finish" />
+  <database name="中文图书实体" type="item" count="1974" state="finish" />
+  <database name="中文期刊实体" type="item" count="140" state="finish" />
+  <database name="西文图书实体" type="item" count="3" state="finish" />
+  <database name="西文期刊实体" type="item" count="0" state="finish" />
+  <database name="中文编目实体" type="item" count="2" state="finish" />
+  <operlog start_date="20190427" end_date="20230907:0-" initial_tables="finish" state="finish" />
+  <accesslog start_date="20200407" end_date="20230907:0-" initial_tables="finish" state="finish" />
+</root>

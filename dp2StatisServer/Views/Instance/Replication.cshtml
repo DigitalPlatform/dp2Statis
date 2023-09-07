@@ -1,0 +1,143 @@
+﻿@model dp2StatisServer.ViewModels.OneInstanceViewModel
+@{
+    ViewBag.Title = "同步";
+}
+
+<article>
+    <header>同步</header>
+
+    @if (string.IsNullOrEmpty(Model.ErrorInfo) == false)
+    {
+        <div>
+            <textarea asp-for="ErrorInfo" class="text-danger"></textarea>
+        </div>
+    }
+
+    @if (string.IsNullOrEmpty(Model.SuccessInfo) == false)
+    {
+        <div>
+            <textarea asp-for="SuccessInfo" class="text-primary text-success"></textarea>
+        </div>
+    }
+
+    <table class="w-100" role="grid">
+        <tr>
+            <td colspan="2" class="text-primary">
+                实例概况
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label asp-for="InstanceName">
+                </label>
+            </td>
+            <td>
+                <span>@Model.InstanceName?.ToString()</span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label asp-for="ReplicateTime">
+                </label>
+            </td>
+            <td>
+                <form asp-action="ChangeReplicateTime" method="post">
+                    <div asp-validation-summary="All" class="text-danger"></div>
+                    <input asp-for="InstanceName" hidden />
+                    <input asp-for="ReplicateTime" class="w-50" />
+                    <button type="submit" class="btn btn-secondary w-25">提交</button>
+                </form>
+            </td>
+        </tr>
+    </table>
+
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <form asp-action="StartReplication" method="post">
+                    <div asp-validation-summary="All" class="text-danger"></div>
+
+                    <input asp-for="InstanceName" hidden />
+
+                    <button type="submit" class="btn btn-primary">
+                        启动同步
+                    </button>
+                </form>
+            </div>
+            <div class="col">
+                <form asp-action="StopReplication" method="post">
+                    <div asp-validation-summary="All" class="text-danger"></div>
+
+                    <input asp-for="InstanceName" hidden />
+
+                    <button type="submit" class="btn btn-secondary">
+                        停止同步
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+    <div id="targetDiv" style="height: 600px;" class="overflow-scroll">进度显示</div>
+
+    <form asp-action="RecreateDatabase" method="post">
+        <div asp-validation-summary="All" class="text-danger"></div>
+
+        <article>
+            <header class="text-danger">危险操作</header>
+
+            <input asp-for="InstanceName" hidden />
+
+            <button type="submit" class="btn btn-danger" onclick="return confirm('您确实要重新创建数据库？\r\n\r\n(警告: 这将摧毁实例内全部数据，并无法挽回。请慎重操作)')">
+                重新创建空白数据库
+            </button>
+        </article>
+    </form>
+
+
+</article>
+
+@section scripts{
+    <script>
+
+        $(document).ready(function () {
+            initialize();
+        });
+
+        function initialize() {
+            // alert("called");
+
+            if (window.EventSource == undefined) {
+                // If not supported
+                document.getElementById('targetDiv').innerHTML = "Your browser doesn't support Server Sent Events.";
+                return;
+            } else {
+                var source = new EventSource(window.location.href + "/../Message");
+
+                source.onopen = function (event) {
+                    document.getElementById('targetDiv').innerHTML += 'Connection Opened.<br>';
+                };
+
+                source.onerror = function (event) {
+                    if (event.eventPhase == EventSource.CLOSED) {
+                        document.getElementById('targetDiv').innerHTML += 'Connection Closed.<br>';
+                    }
+                    else {
+                        document.getElementById('targetDiv').innerHTML += 'Connection Error.<br>';
+                    }
+                };
+
+                source.onmessage = function (event) {
+                    document.getElementById('targetDiv').innerHTML += event.data + '<br>';
+                };
+            }
+        }
+    </script>
+}
+

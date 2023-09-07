@@ -1,0 +1,57 @@
+﻿@model dp2StatisServer.ViewModels.InstancesIndexViewModel
+@{
+    ViewBag.Title = "选择实例";
+}
+<article>
+    <header>选择实例</header>
+
+    @if (string.IsNullOrEmpty(Model.ErrorInfo) == false)
+    {
+        <div>
+            <textarea asp-for="ErrorInfo" class="text-danger"></textarea>
+        </div>
+    }
+
+    @if (string.IsNullOrEmpty(Model.SuccessInfo) == false)
+    {
+        <div>
+            <textarea asp-for="SuccessInfo" class="text-primary text-success"></textarea>
+        </div>
+    }
+
+    <figure>
+        <table class="w-100" role="grid">
+            <thead>
+                <tr>
+                    <th class="text-nowrap">实例名</th>
+                    <th class="text-nowrap">描述</th>
+                    <th class="text-nowrap">dp2library URL</th>
+                    <th class="text-nowrap">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var instance in Model.Instances)
+                {
+                    string? value = null;
+                    if (Model.SelectedInstanceName == instance.Name)
+                        value = "class=fw-bold";
+
+                    <tr @Html.Raw(value) >
+                        <td class="text-nowrap">@instance.Name</td>
+                        <td class="text-nowrap">@instance.Description</td>
+                        <td class="text-nowrap">@instance.AppServerUrl</td>
+                        <td class="text-nowrap">
+                            <a asp-controller="instance"
+                               asp-route-name="@instance.Name"
+                               asp-action="Replication"
+                               class="btn btn-primary btn-block w-100">同步</a>
+
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </figure>
+
+</article>
+

@@ -1,0 +1,132 @@
+﻿@model dp2StatisServer.ViewModels.EditInstanceViewModel
+@{
+    ViewBag.Title = "创建一个实例";
+    var action = "CreateInstance";
+    var action_caption = "创建";
+    if (Model.Action == "change")
+    {
+        action = "ChangeInstance";
+        action_caption = "修改";
+    }
+    else if (Model.Action == "delete")
+    {
+        action = "DeleteInstance";
+        action_caption = "删除";
+    }
+}
+<article>
+    @{
+        var title = $"{action_caption}一个实例";
+    }
+    <header>@title</header>
+
+    @if (string.IsNullOrEmpty(Model.ErrorInfo) == false)
+    {
+        <div>
+            <textarea asp-for="ErrorInfo" class="text-danger"></textarea>
+        </div>
+    }
+
+    @if (string.IsNullOrEmpty(Model.SuccessInfo) == false)
+    {
+        <div>
+            <textarea asp-for="SuccessInfo" class="text-primary text-success"></textarea>
+        </div>
+    }
+
+    <form asp-controller="manage" asp-action="@action" method="post">
+        <div asp-validation-summary="All" class="text-danger"></div>
+
+        <article>
+            <header class="text-danger">危险操作</header>
+
+            <input asp-for="Action" hidden />
+
+            <label asp-for="InstanceName"></label>
+            @if (Model.Action == "change" || Model.Action == "delete")
+            {
+                <input asp-for="InstanceName" readonly="readonly" />
+            }
+            else
+            {
+                <input asp-for="InstanceName" />
+            }
+
+            <label asp-for="Description"></label>
+            @if (Model.Action == "delete")
+            {
+                <input asp-for="Description" readonly="readonly" />
+            }
+            else
+            {
+                <input asp-for="Description" />
+            }
+
+            <label asp-for="ReplicateTime"></label>
+            @if (Model.Action == "delete")
+            {
+                <input asp-for="ReplicateTime" readonly="readonly" />
+            }
+            else
+            {
+                <input asp-for="ReplicateTime" />
+            }
+
+            @if (Model.Action == "delete")
+            {
+                <fieldset>
+                    <label asp-for="AppServerUrl" class="text-black-50"></label>
+                    <input asp-for="AppServerUrl" readonly="readonly" class="text-black-50" />
+
+                    <label asp-for="AppServerUserName" class="text-black-50"></label>
+                    <input asp-for="AppServerUserName" readonly="readonly" class="text-black-50" />
+                </fieldset>
+            }
+            else
+            {
+                <fieldset>
+                    <label asp-for="AppServerUrl"></label>
+                    <input asp-for="AppServerUrl" />
+
+                    <label asp-for="AppServerUserName"></label>
+                    <input asp-for="AppServerUserName" />
+
+                    <label asp-for="AppServerPassword"></label>
+                    @Html.TextBoxFor(x => x.AppServerPassword, new { type = "password"})
+                </fieldset>
+            }
+
+            @if (Model.Action == "create")
+            {
+                <fieldset>
+                    <label asp-for="AdminPassword"></label>
+                    @Html.TextBoxFor(x => x.AdminPassword, new { type = "password" })
+                    <label asp-for="InstanceUserPassword"></label>
+                    @Html.TextBoxFor(x => x.InstanceUserPassword, new { type = "password" })
+                </fieldset>
+            }
+
+            @if (Model.Action == "delete")
+            {
+                <fieldset>
+                    <label asp-for="AdminPassword"></label>
+                    @Html.TextBoxFor(x => x.AdminPassword, new { type = "password" })
+                </fieldset>
+            }
+
+            @if (Model.Action == "change")
+            {
+                <button type="submit" class="btn btn-danger">
+                    @string.Format("{0}一个实例", action_caption)
+                </button>
+            }
+            else
+            {
+                <button type="submit" class="btn btn-danger" onclick="return confirm('您确实要 @action_caption 一个实例？\r\n\r\n(警告: 这将摧毁实例内全部数据，并无法挽回。请慎重操作)')">
+                    @string.Format("{0}一个实例", action_caption)
+                </button>
+            }
+        </article>
+    </form>
+</article>
+

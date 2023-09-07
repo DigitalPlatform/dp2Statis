@@ -34,7 +34,7 @@ namespace DigitalPlatform.LibraryServer.Reporting
         public DbSet<ItemOper> ItemOpers { get; set; }
         public DbSet<AmerceOper> AmerceOpers { get; set; }
 
-        DatabaseConfig _config = null;
+        DatabaseConfig? _config = null;
 
         public DatabaseConfig DatabaseConfig
         {
@@ -165,11 +165,16 @@ namespace DigitalPlatform.LibraryServer.Reporting
         public string? Date { get; set; }  // 所在日志文件日期，8 字符
         public long No { get; set; }
         public long SubNo { get; set; }  // 子序号。用于区分一个日志记录拆分为多个的情况
-        public string? LibraryCode { get; set; }
+        public string LibraryCode { get; set; }
         public string? Operation { get; set; }
         public string? Action { get; set; }
         public DateTime OperTime { get; set; }
         public string? Operator { get; set; }
+
+        public OperBase()
+        {
+            LibraryCode = "";
+        }
 
         public object[] GetKeys()
         {
@@ -197,7 +202,7 @@ namespace DigitalPlatform.LibraryServer.Reporting
             string strOperation = dom.DocumentElement.GetElementText( "operation");
             string strAction = dom.DocumentElement.GetElementText( "action");
             string strOperator = dom.DocumentElement.GetElementText( "operator");
-            string strOperTime = dom.DocumentElement.GetAttribute(
+            string strOperTime = dom.DocumentElement.GetElementText(
                 "operTime");
             string strLibraryCode = dom.DocumentElement.GetElementText( "libraryCode");
 

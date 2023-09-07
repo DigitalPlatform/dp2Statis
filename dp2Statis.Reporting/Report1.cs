@@ -53,6 +53,7 @@ writer,
 macro_table,
 strOutputFileName);
                     return;
+                    // TODO: 增加 102 表
                 case "111":
                     BuildReport_111(context,
 param_table,
@@ -324,8 +325,9 @@ string strOutputFileName)
             // 注: libraryCode 要求是一个馆代码，或者 *
             string libraryCode = param_table["libraryCode"] as string;
             string libraryCode0 = libraryCode;
-            if (libraryCode != "*")
-                libraryCode = "," + libraryCode + ",";
+            //if (libraryCode != "*")
+            //    libraryCode = "," + libraryCode + ",";
+            libraryCode = GetMatchLibraryCode(libraryCode);
 
             macro_table["%library%"] = libraryCode;
             macro_table["%class%"] = classType;
@@ -391,7 +393,7 @@ string strOutputFileName)
 
             var items = context.GetResOpers
                 .Where(b => b.Operation == "getRes"
-                    && (libraryCode == "*" || b.LibraryCode.IndexOf(libraryCode) != -1)
+                    && (libraryCode == "*" || b.LibraryCode.Contains(libraryCode))
                     && string.Compare(b.Date, strStartDate) >= 0
                     && string.Compare(b.Date, strEndDate) <= 0)
                 .LeftJoin(
@@ -464,14 +466,15 @@ string strOutputFileName)
             // 注: libraryCode 要求是一个馆代码，或者 *
             string libraryCode = param_table["libraryCode"] as string;
             string libraryCode0 = libraryCode;
-            if (libraryCode != "*")
-                libraryCode = "," + libraryCode + ",";
+            //if (libraryCode != "*")
+            //    libraryCode = "," + libraryCode + ",";
+            libraryCode = GetMatchLibraryCode(libraryCode);
 
             macro_table["%library%"] = libraryCode;
 
             var items = context.GetResOpers
                 .Where(b => b.Operation == "getRes"
-                && (libraryCode == "*" || b.LibraryCode.IndexOf(libraryCode) != -1)
+                && (libraryCode == "*" || b.LibraryCode.Contains(libraryCode))
                 && string.Compare(b.Date, strStartDate) >= 0
                 && string.Compare(b.Date, strEndDate) <= 0)
                 .LeftJoin(
@@ -554,14 +557,15 @@ string strOutputFileName)
             // 注: libraryCode 要求是一个馆代码，或者 *
             string libraryCode = param_table["libraryCode"] as string;
             string libraryCode0 = libraryCode;
-            if (libraryCode != "*")
-                libraryCode = "," + libraryCode + ",";
+            //if (libraryCode != "*")
+            //    libraryCode = "," + libraryCode + ",";
+            libraryCode = GetMatchLibraryCode(libraryCode);
 
             macro_table["%library%"] = libraryCode;
 
             var items = context.GetResOpers
                 .Where(b => b.Operation == "getRes"
-                && (libraryCode == "*" || b.LibraryCode.IndexOf(libraryCode) != -1)
+                && (libraryCode == "*" || b.LibraryCode.Contains(libraryCode))
                 && string.Compare(b.Date, strStartDate) >= 0
                 && string.Compare(b.Date, strEndDate) <= 0)
                 .LeftJoin(
@@ -638,14 +642,15 @@ string strOutputFileName)
         {
             // 注: libraryCode 要求是一个馆代码，或者 *
             string libraryCode = param_table["libraryCode"] as string;
-            if (libraryCode != "*")
-                libraryCode = "," + libraryCode + ",";
+            //if (libraryCode != "*")
+            //    libraryCode = "," + libraryCode + ",";
+            libraryCode = GetMatchLibraryCode(libraryCode);
 
             macro_table["%library%"] = libraryCode;
 
             var items = context.PassGateOpers
                 .Where(b => b.Operation == "passgate"
-                && (libraryCode == "*" || b.LibraryCode.IndexOf(libraryCode) != -1)
+                && (libraryCode == "*" || b.LibraryCode.Contains(libraryCode))
             && string.Compare(b.Date, strStartDate) >= 0
             && string.Compare(b.Date, strEndDate) <= 0)
                 .Select(oper => new
@@ -705,14 +710,15 @@ string strOutputFileName)
         {
             // 注: libraryCode 要求是一个馆代码，或者 *
             string libraryCode = param_table["libraryCode"] as string;
-            if (libraryCode != "*")
-                libraryCode = "," + libraryCode + ",";
+            //if (libraryCode != "*")
+            //    libraryCode = "," + libraryCode + ",";
+            libraryCode = GetMatchLibraryCode(libraryCode);
 
             macro_table["%library%"] = libraryCode;
 
             var items = context.PassGateOpers
                 .Where(b => b.Operation == "passgate"
-                && (libraryCode == "*" || b.LibraryCode.IndexOf(libraryCode) != -1)
+                && (libraryCode == "*" || b.LibraryCode.Contains(libraryCode))
                 && string.Compare(b.Date, strStartDate) >= 0
                 && string.Compare(b.Date, strEndDate) <= 0)
                 .LeftJoin(
@@ -756,14 +762,15 @@ string strOutputFileName)
         {
             // 注: libraryCode 要求是一个馆代码，或者 *
             string libraryCode = param_table["libraryCode"] as string;
-            if (libraryCode != "*")
-                libraryCode = "," + libraryCode + ",";
+            //if (libraryCode != "*")
+            //    libraryCode = "," + libraryCode + ",";
+            libraryCode = GetMatchLibraryCode(libraryCode);
 
             macro_table["%library%"] = libraryCode;
 
             var items = context.AmerceOpers
                 .Where(b => b.Operation == "amerce"
-                && (libraryCode == "*" || b.LibraryCode.IndexOf(libraryCode) != -1)
+                && (libraryCode == "*" || b.LibraryCode.Contains(libraryCode))
                 && string.Compare(b.Date, strStartDate) >= 0
                 && string.Compare(b.Date, strEndDate) <= 0)
                 .Select(oper => new
@@ -857,8 +864,9 @@ string strOutputFileName)
         {
             // 注: libraryCode 要求是一个馆代码，或者 *
             string libraryCode = param_table["libraryCode"] as string;
-            if (libraryCode != "*")
-                libraryCode = "," + libraryCode + ",";
+            //if (libraryCode != "*")
+            //    libraryCode = "," + libraryCode + ",";
+            libraryCode = GetMatchLibraryCode(libraryCode);
 
             macro_table["%library%"] = libraryCode;
 
@@ -871,7 +879,7 @@ string strOutputFileName)
 
             var items = context.AmerceOpers
                 .Where(b => b.Operation == "amerce"
-                && (libraryCode == "*" || b.LibraryCode.IndexOf(libraryCode) != -1)
+                && (libraryCode == "*" || b.LibraryCode.Contains(libraryCode))
                 && string.Compare(b.Date, strStartDate) >= 0
                 && string.Compare(b.Date, strEndDate) <= 0)
                 .LeftJoin(
@@ -975,14 +983,15 @@ string strOutputFileName)
         {
             // 注: libraryCode 要求是一个馆代码，或者 *
             string libraryCode = param_table["libraryCode"] as string;
-            if (libraryCode != "*")
-                libraryCode = "," + libraryCode + ",";
+            //if (libraryCode != "*")
+            //    libraryCode = "," + libraryCode + ",";
+            libraryCode = GetMatchLibraryCode(libraryCode);
 
             macro_table["%library%"] = libraryCode;
 
             var items = context.CircuOpers
                 .Where(b => (b.Operation == "borrow" || b.Operation == "return")
-                && (libraryCode == "*" || b.LibraryCode.IndexOf(libraryCode) != -1)
+                && (libraryCode == "*" || b.LibraryCode.Contains(libraryCode))
                 && string.Compare(b.Date, strStartDate) >= 0
                 && string.Compare(b.Date, strEndDate) <= 0)
                 .LeftJoin(context.Items,
@@ -1035,14 +1044,15 @@ string strOutputFileName)
         {
             // 注: libraryCode 要求是一个馆代码，或者 *
             string libraryCode = param_table["libraryCode"] as string;
-            if (libraryCode != "*")
-                libraryCode = "," + libraryCode + ",";
+            //if (libraryCode != "*")
+            //    libraryCode = "," + libraryCode + ",";
+            libraryCode = GetMatchLibraryCode(libraryCode);
 
             macro_table["%library%"] = libraryCode;
 
             var items = context.CircuOpers
                 .Where(b => (b.Operation == "borrow" || b.Operation == "return")
-                && (libraryCode == "*" || b.LibraryCode.IndexOf(libraryCode) != -1)
+                && (libraryCode == "*" || b.LibraryCode.Contains(libraryCode))
                 && string.Compare(b.Date, strStartDate) >= 0
                 && string.Compare(b.Date, strEndDate) <= 0)
                 .Select(oper => new
@@ -1094,8 +1104,10 @@ string strOutputFileName)
         {
             // 注: libraryCode 要求是一个馆代码，或者 *
             string libraryCode = param_table["libraryCode"] as string;
-            if (libraryCode != "*")
-                libraryCode = "," + libraryCode + ",";
+            //if (libraryCode != "*")
+            //    libraryCode = "," + libraryCode + ",";
+
+            libraryCode = GetMatchLibraryCode(libraryCode);
 
             macro_table["%library%"] = libraryCode;
 
@@ -1106,7 +1118,7 @@ string strOutputFileName)
 
             var items = context.CircuOpers
                 .Where(b => (b.Operation == "borrow" || b.Operation == "return")
-                && (libraryCode == "*" || b.LibraryCode.IndexOf(libraryCode) != -1)
+                && (libraryCode == "*" || b.LibraryCode.Contains(libraryCode))
                 && string.Compare(b.Date, strStartDate) >= 0
                 && string.Compare(b.Date, strEndDate) <= 0)
                 .LeftJoin(
@@ -2256,9 +2268,11 @@ string strOutputFileName)
         {
             string strLibraryCode = param_table["libraryCode"] as string;
 
+            strLibraryCode = GetMatchLibraryCode(strLibraryCode);
+
             // TODO: 如何比较日志记录中的 libraryCode ? 应该用 ,code, 来比较?
             var opers = context.CircuOpers
-            .Where(b => (strLibraryCode == "*" || b.LibraryCode == strLibraryCode)
+            .Where(b => (strLibraryCode == "*" || b.LibraryCode.Contains(strLibraryCode))
             && string.Compare(b.Date, strStartDate) >= 0
             && string.Compare(b.Date, strEndDate) <= 0)
             .LeftJoin(
@@ -2311,8 +2325,10 @@ string strOutputFileName)
         {
             string strLibraryCode = param_table["libraryCode"] as string;
 
+            strLibraryCode = GetMatchLibraryCode(strLibraryCode);
+
             var opers = context.CircuOpers
-            .Where(b => (strLibraryCode == "*" || b.LibraryCode == strLibraryCode)
+            .Where(b => (strLibraryCode == "*" || b.LibraryCode.Contains(strLibraryCode))
             && string.Compare(b.Date, strStartDate) >= 0
             && string.Compare(b.Date, strEndDate) <= 0)
             .LeftJoin(
@@ -2348,6 +2364,19 @@ string strOutputFileName)
                 throw new Exception(strError);
         }
 
+        static string GetMatchLibraryCode(string libraryCode)
+        {
+            if (libraryCode == null)
+                return ",,";
+            if (libraryCode == "*")
+                return libraryCode;
+            return "," + libraryCode + ",";
+        }
+
+        static bool QueryLibraryCode(string query, string instance)
+        {
+            return (query == "*" || instance.IndexOf(query) != -1);
+        }
 
         // 按部门的图书借阅排行榜
         // parameters:
@@ -2362,8 +2391,16 @@ string strOutputFileName)
         {
             string strLibraryCode = param_table["libraryCode"] as string;
 
+            /*
+            var test = context.CircuOpers
+.Where(b => (strLibraryCode == "*" || b.LibraryCode == strLibraryCode)
+&& string.Compare(b.Date, strStartDate) >= 0
+&& string.Compare(b.Date, strEndDate) <= 0).ToList();
+            */
+            strLibraryCode = GetMatchLibraryCode(strLibraryCode);
+
             var opers = context.CircuOpers
-            .Where(b => (strLibraryCode == "*" || b.LibraryCode == strLibraryCode)
+            .Where(b => (strLibraryCode == "*" || b.LibraryCode.Contains(strLibraryCode))
             && string.Compare(b.Date, strStartDate) >= 0
             && string.Compare(b.Date, strEndDate) <= 0)
             .LeftJoin(
@@ -2417,13 +2454,15 @@ string strOutputFileName)
             if (string.IsNullOrEmpty(strEndDate) == true)
                 strEndDate = strStartDate;
 
+            strLibraryCode = GetMatchLibraryCode(strLibraryCode);
+
             /*
             var opers = context.CircuOpers
     .Where(b => string.Compare(b.Date, strStartDate) >= 0 && string.Compare(b.Date, strEndDate) <= 0)
     .ToList();
     */
             var opers = context.CircuOpers
-            .Where(b => (strLibraryCode == "*" || b.LibraryCode == strLibraryCode)
+            .Where(b => (strLibraryCode == "*" || b.LibraryCode.Contains(strLibraryCode))
             && string.Compare(b.Date, strStartDate) >= 0
             && string.Compare(b.Date, strEndDate) <= 0)
             .LeftJoin(
@@ -2461,13 +2500,14 @@ string strOutputFileName)
                 throw new Exception(strError);
         }
 
+        /*
         public static bool MatchLibraryCode(string libraryCode, string pattern)
         {
             if (pattern == "*")
                 return true;
             return string.Compare(libraryCode, pattern) == 0;
         }
-
+        */
 
         #region  RmlToExcel
 

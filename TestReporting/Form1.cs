@@ -507,6 +507,7 @@ string strHtml)
                         {
                             OutputHistory(message);
                         },
+                        default,
                         out XmlDocument task_dom,
                         out strError);
                     _taskDom = task_dom;

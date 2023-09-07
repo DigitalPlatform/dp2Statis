@@ -1,0 +1,65 @@
+﻿@model dp2StatisServer.ViewModels.LoginViewModel
+
+@{
+    ViewBag.Title = "Login";
+    var error = Model?.ErrorInfo;
+}
+
+<article>
+
+    @using (Html.BeginForm("Login", "Home", FormMethod.Post))
+    {
+        <fieldset>
+            <legend>管理员登录</legend>
+
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary(true)
+            @if (@ViewBag.Message != null)
+            {
+                <div style="border: 1px solid red">
+                    @ViewBag.Message
+                </div>
+            }
+            <table>
+                <tr>
+                    <td>@Html.LabelFor(a => a.InstanceName)</td>
+                    <td>
+                        <input asp-for="InstanceName" readonly="readonly" />
+                    </td>
+                    <td class="text-danger">@Html.ValidationMessageFor(a => a.InstanceName)</td>
+                </tr>
+                <tr>
+                    <td>@Html.LabelFor(a => a.UserName)</td>
+                    <td>@Html.TextBoxFor(a => a.UserName)</td>
+                    <td class="text-danger">@Html.ValidationMessageFor(a => a.UserName)</td>
+                </tr>
+                <tr>
+                    <td>
+                        @Html.LabelFor(a => a.Password)
+                    </td>
+                    <td>
+                        @Html.PasswordFor(a => a.Password)
+                    </td>
+                    <td class="text-danger">
+                        @Html.ValidationMessageFor(a => a.Password)
+                    </td>
+                </tr>
+                @if (string.IsNullOrEmpty(error) == false)
+                {
+                    <tr>
+                        <td>@Html.LabelFor(a => a.ErrorInfo)</td>
+                        <td class="text-danger">@Html.DisplayTextFor(a => a.ErrorInfo)</td>
+                    </tr>
+                }
+                <tr>
+                    <td></td>
+                    <td>
+                        <input type="submit" value="登录" />
+                    </td>
+                    <td></td>
+                </tr>
+            </table>
+        </fieldset>
+    }
+
+</article>

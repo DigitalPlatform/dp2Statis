@@ -9,6 +9,132 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="history.css" />
+    <None Remove="report_def\101.xml" />
+    <None Remove="report_def\102.xml" />
+    <None Remove="report_def\111.xml" />
+    <None Remove="report_def\121.xml" />
+    <None Remove="report_def\131.xml" />
+    <None Remove="report_def\141.xml" />
+    <None Remove="report_def\201.xml" />
+    <None Remove="report_def\202.xml" />
+    <None Remove="report_def\212.xml" />
+    <None Remove="report_def\301.xml" />
+    <None Remove="report_def\302.xml" />
+    <None Remove="report_def\411.xml" />
+    <None Remove="report_def\412.xml" />
+    <None Remove="report_def\421.xml" />
+    <None Remove="report_def\422.xml" />
+    <None Remove="report_def\431.xml" />
+    <None Remove="report_def\432.xml" />
+    <None Remove="report_def\441.xml" />
+    <None Remove="report_def\442.xml" />
+    <None Remove="report_def\443.xml" />
+    <None Remove="report_def\451.xml" />
+    <None Remove="report_def\452.xml" />
+    <None Remove="report_def\471.xml" />
+    <None Remove="report_def\472.xml" />
+    <None Remove="report_def\481.xml" />
+    <None Remove="report_def\482.xml" />
+    <None Remove="report_def\491.xml" />
+    <None Remove="report_def\492.xml" />
+    <None Remove="report_def\493.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="history.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\101.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\102.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\111.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\121.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\131.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\141.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\201.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\202.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\212.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\301.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\302.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\411.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\412.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\421.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\422.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\431.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\432.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\441.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\442.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\443.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\451.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\452.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\471.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\472.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\481.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\482.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\491.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\492.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="report_def\493.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 

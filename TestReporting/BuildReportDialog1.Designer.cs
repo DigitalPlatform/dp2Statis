@@ -40,18 +40,20 @@ namespace TestReporting
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(13, 15);
+            this.label1.Location = new System.Drawing.Point(19, 23);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(89, 18);
+            this.label1.Size = new System.Drawing.Size(101, 28);
             this.label1.TabIndex = 0;
             this.label1.Text = "报表类型:";
             // 
             // button_OK
             // 
             this.button_OK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_OK.Location = new System.Drawing.Point(392, 332);
+            this.button_OK.Location = new System.Drawing.Point(566, 516);
+            this.button_OK.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.button_OK.Name = "button_OK";
-            this.button_OK.Size = new System.Drawing.Size(87, 29);
+            this.button_OK.Size = new System.Drawing.Size(126, 45);
             this.button_OK.TabIndex = 4;
             this.button_OK.Text = "确定";
             this.button_OK.UseVisualStyleBackColor = true;
@@ -61,9 +63,10 @@ namespace TestReporting
             // 
             this.button_Cancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.button_Cancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.button_Cancel.Location = new System.Drawing.Point(485, 332);
+            this.button_Cancel.Location = new System.Drawing.Point(701, 516);
+            this.button_Cancel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.button_Cancel.Name = "button_Cancel";
-            this.button_Cancel.Size = new System.Drawing.Size(91, 29);
+            this.button_Cancel.Size = new System.Drawing.Size(131, 45);
             this.button_Cancel.TabIndex = 5;
             this.button_Cancel.Text = "取消";
             this.button_Cancel.UseVisualStyleBackColor = true;
@@ -74,33 +77,36 @@ namespace TestReporting
             this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel1.Location = new System.Drawing.Point(16, 58);
+            this.panel1.Location = new System.Drawing.Point(23, 90);
+            this.panel1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(546, 258);
+            this.panel1.Size = new System.Drawing.Size(789, 401);
             this.panel1.TabIndex = 6;
             // 
             // comboBox_reportType
             // 
             this.comboBox_reportType.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
             this.comboBox_reportType.FormattingEnabled = true;
-            this.comboBox_reportType.Location = new System.Drawing.Point(138, 12);
+            this.comboBox_reportType.Location = new System.Drawing.Point(199, 19);
+            this.comboBox_reportType.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.comboBox_reportType.Name = "comboBox_reportType";
-            this.comboBox_reportType.Size = new System.Drawing.Size(424, 29);
+            this.comboBox_reportType.Size = new System.Drawing.Size(611, 35);
             this.comboBox_reportType.TabIndex = 2;
             this.comboBox_reportType.SelectedIndexChanged += new System.EventHandler(this.comboBox_reportType_SelectedIndexChanged);
             // 
             // BuildReportDialog1
             // 
             this.AcceptButton = this.button_OK;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(168F, 168F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.CancelButton = this.button_Cancel;
-            this.ClientSize = new System.Drawing.Size(588, 373);
+            this.ClientSize = new System.Drawing.Size(849, 580);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.button_Cancel);
             this.Controls.Add(this.button_OK);
             this.Controls.Add(this.comboBox_reportType);
             this.Controls.Add(this.label1);
+            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "BuildReportDialog1";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
