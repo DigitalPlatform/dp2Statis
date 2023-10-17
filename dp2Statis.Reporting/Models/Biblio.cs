@@ -144,10 +144,29 @@ strBiblioRecPath,
 "field[@name='200']/subfield[@name='a']",
 "title"));
 
+                // 中图法
                 keys.AddRange(BuildKeys(record,
 strBiblioRecPath,
 "field[@name='690']/subfield[@name='a']",
 "class_clc"));
+
+                // 科图法
+                keys.AddRange(BuildKeys(record,
+strBiblioRecPath,
+"field[@name='692']/subfield[@name='a']",
+"class_ktf"));
+
+                // 人大法
+                keys.AddRange(BuildKeys(record,
+strBiblioRecPath,
+"field[@name='694']/subfield[@name='a']",
+"class_rdf"));
+
+                // 其它
+                keys.AddRange(BuildKeys(record,
+strBiblioRecPath,
+"field[@name='686']/subfield[@name='a']",
+"class_other"));
             }
             else
             {
@@ -155,6 +174,49 @@ strBiblioRecPath,
 strBiblioRecPath,
 "field[@name='245']/subfield[@name='a']",
 "title"));
+
+                // DDC (杜威十进制分类法)
+                keys.AddRange(BuildKeys(record,
+strBiblioRecPath,
+"field[@name='082']/subfield[@name='a']",
+"class_ddc"));
+
+                // UDC (国际十进制分类法)
+                keys.AddRange(BuildKeys(record,
+strBiblioRecPath,
+"field[@name='080']/subfield[@name='a']",
+"class_udc"));
+
+                // LCC (国会图书馆分类法)
+                keys.AddRange(BuildKeys(record,
+strBiblioRecPath,
+"field[@name='050']/subfield[@name='a']",
+"class_lcc"));
+
+                // 中图法
+                keys.AddRange(BuildKeys(record,
+strBiblioRecPath,
+"field[@name='093']/subfield[@name='a']",
+"class_clc"));
+
+                // 科图法
+                keys.AddRange(BuildKeys(record,
+strBiblioRecPath,
+"field[@name='094']/subfield[@name='a']",
+"class_ktf"));
+
+                // 人大法
+                keys.AddRange(BuildKeys(record,
+strBiblioRecPath,
+"field[@name='095']/subfield[@name='a']",
+"class_rdf"));
+
+                // 其它
+                keys.AddRange(BuildKeys(record,
+strBiblioRecPath,
+"field[@name='084']/subfield[@name='a']",
+"class_other"));
+
             }
 
             // 对所有检索点排序，赋予 Index

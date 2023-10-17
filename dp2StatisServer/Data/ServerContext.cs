@@ -24,6 +24,14 @@ namespace dp2StatisServer.Data
 
         static bool _initialized = false;
 
+        public static string ReportDefDirectory
+        {
+            get
+            {
+                return Path.Combine(Directory.GetCurrentDirectory(), "report_def");
+            }
+        }
+
         // parameters:
         //      force   是否强制初始化。false 表示不强制初始化，也就是说只会初始化一次，后面再调用不会初始化
         public static void Initialize(bool force = false)
@@ -109,6 +117,12 @@ namespace dp2StatisServer.Data
             );
 
             return new NormalResult();
+        }
+
+        // 根据实例名获得描述
+        public static string? GetInstanceDescription(string libraryCode)
+        {
+            return Instances.FindInstance(libraryCode)?.Description;
         }
     }
 }

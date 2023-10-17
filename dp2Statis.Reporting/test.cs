@@ -258,7 +258,7 @@ namespace DigitalPlatform.LibraryServer.Reporting
             // 进行 left join
             {
                 var biblios = context.Biblios.Where(x => x.RecPath == recpath)
-                        .LeftJoin(
+                        .LeftJoin1(
                         context.Keys,
                         biblio => new { recpath = biblio.RecPath, type = "class_clc", index = 0 },
                         key => new { recpath = key.BiblioRecPath, type = key.Type, index = key.Index },
@@ -405,7 +405,7 @@ namespace DigitalPlatform.LibraryServer.Reporting
             // *** 第二步，验证 left join
             {
                 var biblios = context.Biblios.Where(x => x.RecPath == recpath)
-                        .LeftJoin(
+                        .LeftJoin1(
                         context.Keys,
                         biblio => new { recpath = biblio.RecPath, type = "class_clc", index = 0 },
                         key => new { recpath = key.BiblioRecPath, type = key.Type, index = key.Index },

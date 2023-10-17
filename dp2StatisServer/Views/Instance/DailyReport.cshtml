@@ -1,0 +1,302 @@
+﻿@using dp2StatisServer.ViewModels;
+@model dp2StatisServer.ViewModels.DailyReportViewModel
+@{
+    ViewBag.Title = "每日报表";
+}
+
+<div class="card">
+    <div class="card-header">每日报表 (@Model.InstanceName)</div>
+
+    <div class="card-body">
+
+        @if (string.IsNullOrEmpty(Model.ErrorInfo) == false)
+        {
+            <div>
+                <textarea asp-for="ErrorInfo" class="text-danger"></textarea>
+            </div>
+        }
+
+        @if (string.IsNullOrEmpty(Model.SuccessInfo) == false)
+        {
+            <div>
+                <textarea asp-for="SuccessInfo" class="text-primary text-success"></textarea>
+            </div>
+        }
+
+        @{
+            // 将 daily_report_end_date.txt 文件内容显示出来
+        }
+
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <form asp-action="StartDailyReporting" method="post">
+                        <div asp-validation-summary="All" class="text-danger"></div>
+
+                        <input asp-for="InstanceName" hidden />
+
+                        <button type="submit" class="btn btn-primary">
+                            启动每日报表
+                        </button>
+                    </form>
+                </div>
+                <div class="col">
+                    <form asp-action="StopDailyReporting" method="post">
+                        <div asp-validation-summary="All" class="text-danger"></div>
+
+                        <input asp-for="InstanceName" hidden />
+
+                        <button type="submit" class="btn btn-secondary">
+                            停止每日报表
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+        <div id="targetDiv" style="height: 600px;" class="overflow-scroll">进度显示</div>
+
+
+        <table class="table table-hover table-sm align-middle">
+            <thead>
+                <tr>
+                    <th class="text-nowrap">馆代码</th>
+                    <th class="text-nowrap">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.LibraryCodeList != null)
+                {
+                    @foreach (var code in Model.LibraryCodeList)
+                    {
+                        string? value = null;
+                        if (Model.CurrentLibraryCode == code)
+                            value = "class=\"table-active\"";
+
+                        <tr @Html.Raw(value) onclick="window.location = $(this).find('.switch').attr('href');">
+                            <td class="text-nowrap">@code</td>
+                            <form asp-action="DeleteDailyReportLibraryCode"
+                                  asp-route-libraryCode="@code"
+                                  method="post">
+                            <td class="text-nowrap">
+                                <input asp-for="InstanceName" hidden />
+                                <button type="submit" class="btn btn-danger w-auto" onclick="return confirm('您确实要删除馆代码 @code 定义？\r\n\r\n(警告: 这将删除该馆代码对应的所有报表定义，并无法挽回。请慎重操作)')">删除</button>
+                                <a asp-action="DailyReport"
+                                   asp-route-libraryCode="@code"
+                                   class="switch"
+                                   style="display:none;">
+                                    切换到
+                                </a>
+                            </td>
+                            </form>
+                        </tr>
+                    }
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td class="text-nowrap" colspan="2">
+                        <div class="btn-toolbar mb-3 justify-content-between" role="toolbar" aria-label="Toolbar with button groups">
+                            <form asp-action="AddDailyReportLibraryCode"
+                                  method="post">
+                                <div asp-validation-summary="All" class="text-danger"></div>
+
+                                <div class="input-group input-group-sm w-auto">
+                                    <input asp-for="NewLibraryCode" class="form-control w-auto" placeholder="馆代码" aria-label="Recipient's username" aria-describedby="button-addon2" list="libraryCodeList" />
+                                    <datalist id="libraryCodeList">
+                                        @foreach (var item in DailyReportViewModel.GetLibraryCodeList(
+                                        Model.InstanceName,
+                                        Model.CurrentLibraryCode))
+                                        {
+                                            <option value="@item.Value">
+                                                @item.Text
+                                            </option>
+                                        }
+                                    </datalist>
+
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm w-auto" id="button-addon2">
+                                        新增馆代码
+                                    </button>
+                                </div>
+                            </form>
+
+                            <form asp-action="AddDailyReportLibraryCodeAll"
+                                  method="post">
+                                <div asp-validation-summary="All" class="text-danger"></div>
+
+                                <div class="input-group flex-nowrap input-group-sm w-auto">
+                                    <button type="submit" class="btn btn-outline-secondary w-auto">
+                                        增全
+                                    </button>
+                                </div>
+                            </form>
+
+                        </div>
+                    </td>
+                </tr>
+            </tfoot>
+
+        </table>
+    </div>
+
+    @if (false)
+    {
+        <table class="w-100" role="grid">
+            <tr>
+                <td colspan="2" class="text-primary">
+                    实例概况
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label asp-for="InstanceName">
+                    </label>
+                </td>
+                <td>
+                    <span>@Model.InstanceName?.ToString()</span>
+                </td>
+            </tr>
+        </table>
+    }
+
+    <div class="card-body">
+
+        <div class="table-responsive">
+            <table class="table table-hover table-sm align-middle w-100">
+                <thead>
+                    <tr>
+                        <th class="text-nowrap">报表名</th>
+                        <th class="text-nowrap">创建频率</th>
+                        <th class="text-nowrap">类型</th>
+                        <th class="text-nowrap">配置文件</th>
+                        <th class="text">名字表</th>
+                        <th class="text-nowrap">操作</th>
+                    </tr>
+                </thead>
+                @if (Model.ReportDefs != null)
+                {
+                    <tbody>
+                        @foreach (var def in Model.ReportDefs)
+                        {
+                            string? value = null;
+                            /*
+                            if (Model.CurrentLibraryCode == code)
+                            value = "class=fw-bold";
+                            */
+                            <tr @Html.Raw(value)>
+                                <td class="text-nowrap">@def.Name</td>
+                                <td class="text-nowrap">@def.Frequency</td>
+                                <td class="text-nowrap">@def.Type</td>
+                                <td class="text-nowrap">@def.CfgFile</td>
+                                <td class="text-truncate" style="max-width: 200px;">@def.NameTable</td>
+
+                                <td class="text-nowrap">
+
+                                    <form asp-action="DeleteDailyReportDef"
+                                          asp-route-libraryCode="@Model.CurrentLibraryCode"
+                                          asp-route-type="@def.Type"
+                                          method="post">
+                                        <div asp-validation-summary="All" class="text-danger"></div>
+
+                                        <a asp-action="EditDailyReportOneDef"
+                                           asp-route-libraryCode="@Model.CurrentLibraryCode"
+                                           asp-route-reportType="@def.Type"
+                                           class="btn btn-sm">
+                                            修改
+                                        </a>
+
+                                        <input asp-for="InstanceName" hidden />
+                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('您确实要删除报表 @def.Type 的定义？\r\n\r\n(警告: 这将删除该类型报表定义，并无法挽回。请慎重操作)')">
+                                            删除
+                                        </button>
+                                    </form>
+
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                }
+                @if (false)
+                {
+                    <tfoot>
+                        <tr>
+                            <td class="text-nowrap" colspan="6">
+                            </td>
+                        </tr>
+                    </tfoot>
+                }
+            </table>
+        </div>
+        <nav class="navbar navbar-light bg-light">
+            <form asp-action="AddDailyReportNewDef"
+                  method="post">
+                <div asp-validation-summary="All" class="text-danger"></div>
+
+                <div class="input-group flex-nowrap input-group-sm w-auto">
+                    <input asp-for="CurrentLibraryCode" hidden />
+                    <input asp-for="NewReportType" class="form-control w-auto" placeholder="报表类型" />
+                    <button type="submit" class="btn btn-outline-secondary w-auto">
+                        新增报表类型
+                    </button>
+
+                </div>
+            </form>
+
+            <form asp-action="AddDailyReportNewDefAll"
+                  method="post">
+                <div asp-validation-summary="All" class="text-danger"></div>
+
+                <div class="input-group flex-nowrap input-group-sm w-auto">
+
+                    <input asp-for="CurrentLibraryCode" hidden />
+                    <button type="submit" class="btn btn-outline-secondary w-auto">
+                        增全
+                    </button>
+                </div>
+            </form>
+        </nav>
+    </div>
+
+</div>
+
+@section scripts{
+    <script>
+
+        $(document).ready(function () {
+            initialize();
+        });
+
+        function initialize() {
+            // alert("called");
+
+            if (window.EventSource == undefined) {
+                // If not supported
+                document.getElementById('targetDiv').innerHTML = "Your browser doesn't support Server Sent Events.";
+                return;
+            } else {
+                var source = new EventSource(window.location.href + "/../Message");
+
+                source.onopen = function (event) {
+                    document.getElementById('targetDiv').innerHTML += 'Connection Opened.<br>';
+                };
+
+                source.onerror = function (event) {
+                    if (event.eventPhase == EventSource.CLOSED) {
+                        document.getElementById('targetDiv').innerHTML += 'Connection Closed.<br>';
+                    }
+                    else {
+                        document.getElementById('targetDiv').innerHTML += 'Connection Error.<br>';
+                    }
+                };
+
+                source.onmessage = function (event) {
+                    document.getElementById('targetDiv').innerHTML += event.data + '<br>';
+                };
+            }
+        }
+    </script>
+}
+
+
+

@@ -92,3 +92,103 @@ https://learn.microsoft.com/zh-cn/aspnet/core/tutorials/web-api-help-pages-using
 
 https://swagger.io/specification/
 
+https://www.c-sharpcorner.com/article/exploring-postgresql-sequences-with-entity-framework-core/
+
+https://www.npgsql.org/efcore/modeling/generated-properties.html?tabs=13%2Cefcore5#Standard%20Sequence-Driven%20Columns
+
+
+using (DbCommand cmd = _context.Database.GetDbConnection().CreateCommand()) 
+{
+    cmd.CommandText = "select nextval('contact_id_seq')";
+    _context.Database.OpenConnection();
+    DbDataReader reader = cmd.ExecuteReader();
+    reader.Read();
+    newID = (int)reader.GetValue(0);
+    _context.Database.CloseConnection();
+}
+
+https://www.commandprompt.com/education/how-to-reset-a-sequence-in-postgresql/
+
+https://popsql.com/learn-sql/postgresql/how-to-alter-sequence-in-postgresql
+
+https://dba.stackexchange.com/questions/179802/postgres-sequence-problems-manually-created-pids-and-proper-sequence-resetting
+
+https://database.guide/how-setval-works-in-postgresql/
+
+Server [localhost]:
+Database [postgres]: snitem
+Port [5432]:
+Username [postgres]: sncenter
+用户 sncenter 的口令：
+psql (14.1)
+输入 "help" 来获取帮助信息.
+
+snitem=> \ds
+
+snitem=> select * from "item_Id_seq";
+ last_value | log_cnt | is_called
+------------+---------+-----------
+        100 |       0 | f
+(1 行记录)
+
+snitem=> select setval(pg_get_serial_sequence('item', 'Id'), (select max(item."Id") from item));
+ setval
+--------
+      3
+(1 行记录)
+
+snitem=> select setval(pg_get_serial_sequence('item', 'Id'), (select (max(item."Id")+1) from item));
+ setval
+--------
+      4
+(1 行记录)
+
+https://dba.stackexchange.com/questions/267684/create-sequence-starting-with-maximum-id-from-a-table#:~:text=Create%20the%20sequence%2C%20then%20set%20the%20value%20afterwards%3A,as%20well%3A%20alter%20sequence%20some_seq%20owned%20by%20some_table.id%3B
+
+https://github.com/dotnet/aspnetcore/issues/4824
+TextAreaTagHelper ignores default value within textarea tags #4824
+
+https://learn.microsoft.com/en-us/answers/questions/855727/how-do-i-trigger-a-popup-with-onclick-sumbit-butto
+
+***
+https://getbootstrap.com/docs/5.0/content/tables/#responsive-tables
+这是比较方便的 bootstrap 文档
+
+https://blog.jongallant.com/2013/08/bootswatch-mvc/
+
+https://dotnetthoughts.net/using-less-css-with-aspnet-core/#:~:text=Unfortunately%2C%20you%20can%E2%80%99t%20use%20LESS%20directly%20in%20ASP.NET,in%20this%20post%20I%20am%20using%20gulp-less%20package.
+
+https://dotnetthoughts.net/using-less-css-with-aspnet-core/
+
+
+***
+https://jakeydocs.readthedocs.io/en/latest/client-side/less-sass-fa.html
+
+https://learn.microsoft.com/en-us/archive/msdn-magazine/2013/november/cutting-edge-programming-css-do-more-with-less
+
+***
+https://tehgm.net/blog/aspnetcore-sass-js-minify/
+
+***
+https://blog.elmah.io/how-we-do-bundling-and-minification-in-asp-net-core/
+
+***
+https://bootswatch.com/morph/#top
+
+
+https://www.thereformedprogrammer.net/new-features-for-unit-testing-your-entity-framework-core-5-code/
+
+https://www.mikee.se/posts/fastest_way_to_reset_database_with_ef_core_20220103
+
+https://khalidabuhakmeh.com/more-efficient-deletes-with-entity-framework-core
+
+***
+https://stackoverflow.com/questions/21615693/extension-method-for-iqueryable-left-outer-join-using-linq
+
+https://www.c-sharpcorner.com/blogs/working-with-left-outer-join-using-lambda-and-linq
+
+https://learn.microsoft.com/en-us/dotnet/csharp/linq/perform-left-outer-joins
+
+https://dotnettutorials.net/lesson/full-outer-join-in-linq/
+
+

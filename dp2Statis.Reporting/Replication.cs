@@ -421,7 +421,6 @@ out strError);
             return 0;
         }
 
-#if NO
 
         // 记忆书目库的分类号 style 列表
         int MemoryClassFromStyles(XmlElement root,
@@ -486,6 +485,23 @@ out strError);
             return 0;
         }
 
+        // 获得不是 _ 和 __ 打头的 style 值
+        static string GetPureStyle(string strText)
+        {
+            List<string> results = new List<string>();
+            string[] parts = strText.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (string s in parts)
+            {
+                if (s[0] == '_')
+                    continue;
+                results.Add(s);
+            }
+
+            return StringUtil.MakePathList(results);
+        }
+
+#if NO
+
         // 从计划文件中获得所有分类号检索途径 style
         internal int GetClassFromStyles(
             XmlElement root,
@@ -504,20 +520,6 @@ out strError);
         }
 
 
-        // 获得不是 _ 和 __ 打头的 style 值
-        static string GetPureStyle(string strText)
-        {
-            List<string> results = new List<string>();
-            string[] parts = strText.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (string s in parts)
-            {
-                if (s[0] == '_')
-                    continue;
-                results.Add(s);
-            }
-
-            return StringUtil.MakePathList(results);
-        }
 
 #endif
 
@@ -857,6 +859,7 @@ out strError);
 #endif
 
 #if NO
+
                 // 记忆书目库的分类号 style 列表
                 nRet = MemoryClassFromStyles(task_dom.DocumentElement,
         out strError);
@@ -881,6 +884,7 @@ out strError);
                         */
                     return -1;
                 }
+
 
                 // 从计划文件中获得所有分类号检索途径 style
                 List<string> styles = new List<string>();
@@ -2250,7 +2254,7 @@ strStyle,
                     {
                         // Number = 1062 重复的 PrimaryKey
 
-                        throw ex;
+                        throw; // ex;
                     }
                 }
             }

@@ -83,23 +83,23 @@ namespace dp2StatisServer.Controllers
 
                     if (has_right)
                     {
-                        this.HttpContext.Session.SetString("UserName", model.UserName);
-                        this.HttpContext.Session.SetString("InstanceName", model.InstanceName == null ? "" : model.InstanceName);
-                        return RedirectToAction("UserDashBoard");
+                        this.SetUserName(model.UserName,
+                            model.InstanceName == null ? "" : model.InstanceName);
+                        return RedirectToAction("UserDashBoard", new { instance_name = model.InstanceName });
                     }
                     else
                         error = "权限不足";
                 }
 
                 model.ErrorInfo = error;
-                RemoveSessionItem();
+                this.RemoveSessionItem();
             }
             return View(model);
         }
 
-        public ActionResult UserDashBoard()
+        public ActionResult UserDashBoard(string? instance_name)
         {
-            if (IsSupervisor() || IsInstanceManager())
+            if (this.IsSupervisor() || this.HttpContext.IsInstanceManager(instance_name))
             {
                 return View();
             }
@@ -111,15 +111,12 @@ namespace dp2StatisServer.Controllers
 
         public ActionResult Logout()
         {
-            RemoveSessionItem();
-            return RedirectToAction("Login");
+            var instance_name = (string?)this.Request.RouteValues["name"];
+            this.RemoveSessionItem();
+            return RedirectToAction("Login", new { instance_name = instance_name});
         }
 
-        void RemoveSessionItem()
-        {
-            this.HttpContext.Session.Remove("UserName");
-            this.HttpContext.Session.Remove("InstanceName");
-        }
+
 
         #endregion
 

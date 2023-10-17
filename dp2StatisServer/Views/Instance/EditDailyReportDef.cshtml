@@ -1,0 +1,151 @@
+﻿@model dp2StatisServer.ViewModels.DailyReportOneReportViewModel
+@{
+    ViewBag.Title = "修改一个报表定义";
+}
+
+<div class="card p-3">
+    @{
+        var title = $"修改一个报表定义";
+    }
+    <div class="card-header">@title</div>
+    <div class="card-body">
+
+        @if (string.IsNullOrEmpty(Model.ErrorInfo) == false)
+        {
+            <div>
+                <textarea asp-for="ErrorInfo" class="text-danger"></textarea>
+            </div>
+        }
+
+        @if (string.IsNullOrEmpty(Model.SuccessInfo) == false)
+        {
+            <div>
+                <textarea asp-for="SuccessInfo" class="text-primary text-success"></textarea>
+            </div>
+        }
+
+        <form asp-controller="instance"
+              asp-action="EditDailyReportOneDef"
+              method="post">
+            <div asp-validation-summary="All" class="text-danger"></div>
+
+            <div class="mb-3 row">
+                <label class="col-sm-2 col-form-label" asp-for="LibraryCode"></label>
+                <div class="col-sm-10">
+                    <input class="form-control" asp-for="LibraryCode" readonly="readonly" />
+                </div>
+            </div>
+
+            <div class="mb-3 row">
+                <label class="col-sm-2 col-form-label" asp-for="Name"></label>
+                <div class="col-sm-10">
+                    <input class="form-control" asp-for="Name" readonly="readonly" />
+                </div>
+            </div>
+
+            <div class="mb-3 row">
+                <label class="col-sm-2 col-form-label" asp-for="Frequency"></label>
+                <div class="col-sm-10">
+                    <input class="form-control" asp-for="Frequency" />
+                </div>
+            </div>
+
+            <fieldset>
+                <div class="mb-3 row">
+                    <label class="col-sm-2 col-form-label" asp-for="Type"></label>
+                    <div class="col-sm-10">
+
+                        <input class="form-control" asp-for="Type" />
+                    </div>
+                </div>
+
+                <div class="mb-3 row">
+                    <label class="col-sm-2 col-form-label" asp-for="NameTable"></label>
+                    <div class="col-sm-10">
+
+                        <input class="nameTable form-control" asp-for="NameTable" />
+                        @if (Model.Type == "102")
+                        {
+                            <a href="javascript:void(0)" data-librarycode="@Model.LibraryCode" class="importNames form-control btn btn-sm w-auto">
+                                导入全部名字
+                            </a>
+                        }
+                        else
+                        {
+                            <a style="pointer-events: none;" href="javascript:void(0)" data-librarycode="@Model.LibraryCode" class="importNames form-control btn btn-sm disabled w-auto">
+                                导入全部名字
+                            </a>
+                        }
+                    </div>
+                </div>
+            </fieldset>
+
+            <div class="mb-3 row">
+                <label class="col-sm-2 col-form-label" asp-for="CfgFile"></label>
+                <div class="col-sm-10">
+                    <input class="form-control" asp-for="CfgFile" readonly="readonly" />
+                </div>
+            </div>
+
+
+            <button type="submit" class="form-control btn btn-primary">
+                修改
+            </button>
+        </form>
+    </div>
+
+</div>
+
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            // GET BY ID
+            $(".importNames").on("click", function () {
+                var formData = new FormData();
+                var instance = $(this).attr("data-instance");
+                var libraryCode = $(this).attr("data-librarycode");
+                var url = '@Url.Action("GetNameTable", "instance", new { libraryCode = @Model.LibraryCode})';
+                $.ajax({
+                    type: 'GET',
+                    url: url,
+                    contentType: false,
+                    processData: false,
+                    cache: false,
+                    data: formData,
+                    success: function (response) {
+                        if (response.ResponseCode == 0) {
+                            /* alert(response.ResponseMessage); */
+
+                            $(".nameTable").val(response.ResponseMessage);
+                        }
+                        else {
+                            alert(response.ResponseMessage);
+                        }
+                    },
+                    error: errorCallback
+                });
+            });
+            function resetForm() {
+                $("#hdn-student-id").val("");
+                $("#name").val("");
+                $("#email").val("");
+            }
+            function errorCallback() {
+                alert("Something went wrong please contact admin.");
+            }
+            function successCallback(response) {
+                if (response.responseCode == 0) {
+                    resetForm();
+                    alert(response.responseMessage, function () {
+
+                        //PERFORM REMAINING LOGIC
+                    });
+                }
+                else {
+                    alert(response.ResponseMessage);
+                }
+            };
+        });
+    </script>
+}
+

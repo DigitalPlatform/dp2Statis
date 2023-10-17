@@ -47,6 +47,8 @@ namespace DigitalPlatform.LibraryServer.Reporting
         public LibraryContext(DatabaseConfig config)
         {
             _config = config;
+            // 2023/9/19
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -61,8 +63,15 @@ namespace DigitalPlatform.LibraryServer.Reporting
                     sqlOptions.EnableRetryOnFailure();
                 }*/);
 #endif
-            optionsBuilder.UseNpgsql(_config.BuildConnectionString(),
-                options => options.UseAdminDatabase("postgres"));
+            if (_config.Testing == true)
+            {
+                optionsBuilder.UseSqlite("Data Source=unittest.db");   // "Data Source=:memory:"
+            }
+            else
+            {
+                optionsBuilder.UseNpgsql(_config.BuildConnectionString(),
+                    options => options.UseAdminDatabase("postgres"));
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -1053,6 +1062,8 @@ namespace DigitalPlatform.LibraryServer.Reporting
         public string? Password { get; set; }
         public string? DatabaseName { get; set; }
 
+        public bool Testing { get; set; }
+
         public string BuildConnectionString()
         {
 #if OLD
@@ -1074,6 +1085,8 @@ namespace DigitalPlatform.LibraryServer.Reporting
             string value = $"Server={ServerName};Database={DatabaseName};User Id={UserName};Password={Password};";
             return value;
 #endif
+            if (Testing)
+                return "Data Source=unittest.db";   //  "Data Source=:memory:";
             // pgsql
             // return $"Host={ServerName};Username={UserName};Password={Password};Database={DatabaseName};";
             return $"Host={ServerName};Username=postgres;Password=test;Database={DatabaseName};";

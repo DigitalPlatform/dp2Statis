@@ -482,6 +482,21 @@ namespace DigitalPlatform.LibraryClientOpenApi
             }
         }
 
+        // 2023/9/14
+        public async Task<GetSystemParameterResponse> GetSystemParameterAsync(GetSystemParameterRequest body,
+    CancellationToken token = default)
+        {
+            dp2libraryClient client = new dp2libraryClient(Url, _httpClient);
+            using var pair = new TokenPair(_timeout, token);
+
+            while (true)
+            {
+                var result = await client.GetSystemParameterAsync(body, pair.LinkedToken);
+                if (await CheckResult(result.GetSystemParameterResult) == false)
+                    return result;
+            }
+        }
+
         #region 按需登录
 
         public ErrorCode ErrorCode;

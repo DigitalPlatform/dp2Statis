@@ -2,8 +2,8 @@
 @{
     ViewBag.Title = "选择实例";
 }
-<article>
-    <header>选择实例</header>
+<div class="card">
+    <div class="card-header">选择实例</div>
 
     @if (string.IsNullOrEmpty(Model.ErrorInfo) == false)
     {
@@ -19,8 +19,8 @@
         </div>
     }
 
-    <figure>
-        <table class="w-100" role="grid">
+    <div class="card-body">
+        <table class="table">
             <thead>
                 <tr>
                     <th class="text-nowrap">实例名</th>
@@ -44,14 +44,21 @@
                             <a asp-controller="instance"
                                asp-route-name="@instance.Name"
                                asp-action="Replication"
-                               class="btn btn-primary btn-block w-100">同步</a>
-
+                               class="btn btn-primary btn-block">同步</a>
+                            <a asp-controller="instance"
+                               asp-route-name="@instance.Name"
+                               asp-action="BuildReport"
+                               class="btn btn-primary btn-block">单个报表</a>
+                            <a asp-controller="instance"
+                               asp-route-name="@instance.Name"
+                               asp-action="DailyReport"
+                               class="btn btn-primary btn-block">每日报表</a>
                         </td>
                     </tr>
                 }
             </tbody>
         </table>
-    </figure>
+    </div>
 
-</article>
+</div>
 

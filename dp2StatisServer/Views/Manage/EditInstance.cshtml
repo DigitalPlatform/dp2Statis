@@ -14,119 +14,140 @@
         action_caption = "删除";
     }
 }
-<article>
+<div class="card">
     @{
         var title = $"{action_caption}一个实例";
     }
-    <header>@title</header>
+    <div class="card-header">@title</div>
+    <div class="card-body">
 
-    @if (string.IsNullOrEmpty(Model.ErrorInfo) == false)
-    {
-        <div>
-            <textarea asp-for="ErrorInfo" class="text-danger"></textarea>
-        </div>
-    }
+        @if (string.IsNullOrEmpty(Model.ErrorInfo) == false)
+        {
+            <div>
+                <textarea asp-for="ErrorInfo" class="text-danger"></textarea>
+            </div>
+        }
 
-    @if (string.IsNullOrEmpty(Model.SuccessInfo) == false)
-    {
-        <div>
-            <textarea asp-for="SuccessInfo" class="text-primary text-success"></textarea>
-        </div>
-    }
+        @if (string.IsNullOrEmpty(Model.SuccessInfo) == false)
+        {
+            <div>
+                <textarea asp-for="SuccessInfo" class="text-primary text-success"></textarea>
+            </div>
+        }
 
-    <form asp-controller="manage" asp-action="@action" method="post">
-        <div asp-validation-summary="All" class="text-danger"></div>
+        <form asp-controller="manage" asp-action="@action" method="post">
+            <div asp-validation-summary="All" class="text-danger"></div>
 
-        <article>
-            <header class="text-danger">危险操作</header>
+            <div class="card">
+                <div class="card-header text-danger">危险操作</div>
+                <div class="card-body">
 
-            <input asp-for="Action" hidden />
+                    <input asp-for="Action" hidden />
 
-            <label asp-for="InstanceName"></label>
-            @if (Model.Action == "change" || Model.Action == "delete")
-            {
-                <input asp-for="InstanceName" readonly="readonly" />
-            }
-            else
-            {
-                <input asp-for="InstanceName" />
-            }
+                    <div class="mb-3">
+                        <label class="form-label" asp-for="InstanceName"></label>
+                        @if (Model.Action == "change" || Model.Action == "delete")
+                        {
+                            <input class="form-control" asp-for="InstanceName" readonly="readonly" />
+                        }
+                        else
+                        {
+                            <input class="form-control" asp-for="InstanceName" />
+                        }
+                    </div>
 
-            <label asp-for="Description"></label>
-            @if (Model.Action == "delete")
-            {
-                <input asp-for="Description" readonly="readonly" />
-            }
-            else
-            {
-                <input asp-for="Description" />
-            }
+                    <div class="mb-3">
+                        <label class="form-label" asp-for="Description"></label>
+                        @if (Model.Action == "delete")
+                        {
+                            <input class="form-control" asp-for="Description" readonly="readonly" />
+                        }
+                        else
+                        {
+                            <input class="form-control" asp-for="Description" />
+                        }
+                    </div>
 
-            <label asp-for="ReplicateTime"></label>
-            @if (Model.Action == "delete")
-            {
-                <input asp-for="ReplicateTime" readonly="readonly" />
-            }
-            else
-            {
-                <input asp-for="ReplicateTime" />
-            }
+                    <div class="mb-3">
+                        <label class="form-label" asp-for="ReplicateTime"></label>
+                        @if (Model.Action == "delete")
+                        {
+                            <input class="form-control" asp-for="ReplicateTime" readonly="readonly" />
+                        }
+                        else
+                        {
+                            <input class="form-control" asp-for="ReplicateTime" />
+                        }
+                    </div>
 
-            @if (Model.Action == "delete")
-            {
-                <fieldset>
-                    <label asp-for="AppServerUrl" class="text-black-50"></label>
-                    <input asp-for="AppServerUrl" readonly="readonly" class="text-black-50" />
+                    @if (Model.Action == "delete")
+                    {
+                        <fieldset>
+                            <div class="mb-3">
+                                <label class="form-label" asp-for="AppServerUrl" class="text-black-50"></label>
+                                <input class="form-control" asp-for="AppServerUrl" readonly="readonly" class="text-black-50" />
+                            </div>
 
-                    <label asp-for="AppServerUserName" class="text-black-50"></label>
-                    <input asp-for="AppServerUserName" readonly="readonly" class="text-black-50" />
-                </fieldset>
-            }
-            else
-            {
-                <fieldset>
-                    <label asp-for="AppServerUrl"></label>
-                    <input asp-for="AppServerUrl" />
+                            <div class="mb-3">
+                                <label class="form-label" asp-for="AppServerUserName" class="text-black-50"></label>
+                                <input class="form-control" asp-for="AppServerUserName" readonly="readonly" class="text-black-50" />
+                            </div>
+                        </fieldset>
+                    }
+                    else
+                    {
+                        <fieldset>
+                            <div class="mb-3">
+                                <label class="form-label" asp-for="AppServerUrl"></label>
+                                <input class="form-control" asp-for="AppServerUrl" />
+                            </div>
 
-                    <label asp-for="AppServerUserName"></label>
-                    <input asp-for="AppServerUserName" />
+                            <div class="mb-3">
+                                <label class="form-label" asp-for="AppServerUserName"></label>
+                                <input class="form-control" asp-for="AppServerUserName" />
+                            </div>
 
-                    <label asp-for="AppServerPassword"></label>
-                    @Html.TextBoxFor(x => x.AppServerPassword, new { type = "password"})
-                </fieldset>
-            }
+                            <div class="mb-3">
+                                <label class="form-label" asp-for="AppServerPassword"></label>
+                                @Html.TextBoxFor(x => x.AppServerPassword, new { type = "password", @class="form-control"})
+                            </div>
+                        </fieldset>
+                    }
 
-            @if (Model.Action == "create")
-            {
-                <fieldset>
-                    <label asp-for="AdminPassword"></label>
-                    @Html.TextBoxFor(x => x.AdminPassword, new { type = "password" })
-                    <label asp-for="InstanceUserPassword"></label>
-                    @Html.TextBoxFor(x => x.InstanceUserPassword, new { type = "password" })
-                </fieldset>
-            }
+                    @if (Model.Action == "create")
+                    {
+                        <div class="mb-3">
+                            <label class="form-label" asp-for="AdminPassword"></label>
+                            @Html.TextBoxFor(x => x.AdminPassword, new { type = "password" , @class="form-control"})
+                            <label class="form-label" asp-for="InstanceUserPassword"></label>
+                            @Html.TextBoxFor(x => x.InstanceUserPassword, new { type = "password", @class="form-control" })
+                        </div>
+                    }
 
-            @if (Model.Action == "delete")
-            {
-                <fieldset>
-                    <label asp-for="AdminPassword"></label>
-                    @Html.TextBoxFor(x => x.AdminPassword, new { type = "password" })
-                </fieldset>
-            }
+                    @if (Model.Action == "delete")
+                    {
+                        <div class="mb-3">
+                            <label class="form-label" asp-for="AdminPassword"></label>
+                            @Html.TextBoxFor(x => x.AdminPassword, new { type = "password", @class="form-control" })
+                        </div>
+                    }
 
-            @if (Model.Action == "change")
-            {
-                <button type="submit" class="btn btn-danger">
-                    @string.Format("{0}一个实例", action_caption)
-                </button>
-            }
-            else
-            {
-                <button type="submit" class="btn btn-danger" onclick="return confirm('您确实要 @action_caption 一个实例？\r\n\r\n(警告: 这将摧毁实例内全部数据，并无法挽回。请慎重操作)')">
-                    @string.Format("{0}一个实例", action_caption)
-                </button>
-            }
-        </article>
-    </form>
-</article>
+                    @if (Model.Action == "change")
+                    {
+                        <button type="submit" class="form-control btn btn-danger">
+                            @string.Format("{0}一个实例", action_caption)
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="submit" class="form-control btn btn-danger" onclick="return confirm('您确实要 @action_caption 一个实例？\r\n\r\n(警告: 这将摧毁实例内全部数据，并无法挽回。请慎重操作)')">
+                            @string.Format("{0}一个实例", action_caption)
+                        </button>
+                    }
+                </div>
+            </div>
+        </form>
+    </div>
+
+</div>
 

@@ -1,6 +1,7 @@
 ﻿using System.Xml;
 using Microsoft.AspNetCore.Mvc;
 using dp2StatisServer.Data;
+using System.Runtime.CompilerServices;
 
 namespace dp2StatisServer.Controllers
 {
@@ -20,6 +21,8 @@ namespace dp2StatisServer.Controllers
         {
             return _instanceRepository;
         }
+
+#if REMOVED
 
 
         internal bool IsSupervisor()
@@ -45,6 +48,7 @@ namespace dp2StatisServer.Controllers
                 return this.HttpContext.Session.GetString("UserName");
             }
         }
+#endif
 
         #region 实现 IInstanceRepository
 
@@ -86,4 +90,121 @@ namespace dp2StatisServer.Controllers
         #endregion
     }
 
+    public static class ControllerBaseExtension
+    {
+        public static bool IsSupervisor(this ControllerBase controller)
+        {
+            return controller.HttpContext.IsSupervisor();
+        }
+
+        public static bool IsInstanceManager(this ControllerBase controller,
+            string currentInstanceName)
+        {
+            return controller.IsInstanceManager(currentInstanceName);
+        }
+
+        public static bool IsInstanceManager(this ControllerBase controller)
+        {
+            var instance_name = (string?)controller.Request.RouteValues["name"];
+            if (string.IsNullOrEmpty(instance_name))
+                return false;   // TODO: 抛出异常?
+            return controller.IsInstanceManager(instance_name);
+        }
+
+        public static bool IsInstanceManagerOrSupervisor(this ControllerBase controller,
+            string currentInstanceName)
+        {
+            return controller.HttpContext.IsInstanceManagerOrSupervisor(currentInstanceName);
+        }
+
+        public static bool IsInstanceManagerOrSupervisor(this ControllerBase controller)
+        {
+            var instance_name = (string?)controller.Request.RouteValues["name"];
+            if (string.IsNullOrEmpty(instance_name))
+                return false;   // TODO: 抛出异常?
+            return controller.HttpContext.IsInstanceManagerOrSupervisor(instance_name);
+        }
+
+        public static void RemoveSessionItem(this ControllerBase controller)
+        {
+            controller.HttpContext.RemoveSessionItem();
+        }
+
+        public static string? GetUserName(this ControllerBase controller)
+        {
+            return controller.HttpContext.GetUserName();
+        }
+
+        public static void SetUserName(this ControllerBase controller,
+            string userName,
+            string instanceName)
+        {
+            controller.HttpContext.SetUserName(userName,
+                instanceName);
+        }
+    }
+
+    public static class HttpContextExtension
+    {
+        public static bool IsSupervisor(this HttpContext context)
+        {
+            var userName = context.Session.GetString("UserName");
+            var instanceName = context.Session.GetString("InstanceName");
+            return (userName != null
+                && string.IsNullOrEmpty(instanceName));
+        }
+
+        public static bool IsInstanceManager(this HttpContext context,
+            string currentInstanceName)
+        {
+            var userName = context.Session.GetString("UserName");
+            var instanceName = context.Session.GetString("InstanceName");
+            return (userName != null
+                && instanceName == currentInstanceName);
+        }
+
+        public static bool IsInstanceManagerOrSupervisor(this HttpContext context,
+            string currentInstanceName)
+        {
+            var userName = context.Session.GetString("UserName");
+            var instanceName = context.Session.GetString("InstanceName");
+            return (userName != null || instanceName == currentInstanceName);
+        }
+
+        public static void RemoveSessionItem(this HttpContext context)
+        {
+            context.Session.Remove("UserName");
+            context.Session.Remove("InstanceName");
+        }
+
+        public static string? GetUserName(this HttpContext context)
+        {
+            return context.Session.GetString("UserName");
+        }
+
+        public class UserInfo
+        {
+            public string? InstanceName { get; set; }
+            public string? UserName { get; set; }
+        }
+
+        public static UserInfo GetUserInfo(this HttpContext context)
+        {
+            var userName = context.Session.GetString("UserName");
+            var instanceName = context.Session.GetString("InstanceName");
+            return new UserInfo
+            {
+                UserName = userName,
+                InstanceName = instanceName
+            };
+        }
+
+        public static void SetUserName(this HttpContext context,
+            string userName,
+            string instanceName)
+        {
+            context.Session.SetString("UserName", userName);
+            context.Session.SetString("InstanceName", instanceName);
+        }
+    }
 }

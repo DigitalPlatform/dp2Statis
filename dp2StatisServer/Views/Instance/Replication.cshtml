@@ -3,105 +3,109 @@
     ViewBag.Title = "同步";
 }
 
-<article>
-    <header>同步</header>
+<div class="card">
+    <div class="card-header">同步</div>
+    <div class="card-body">
 
-    @if (string.IsNullOrEmpty(Model.ErrorInfo) == false)
-    {
-        <div>
-            <textarea asp-for="ErrorInfo" class="text-danger"></textarea>
-        </div>
-    }
-
-    @if (string.IsNullOrEmpty(Model.SuccessInfo) == false)
-    {
-        <div>
-            <textarea asp-for="SuccessInfo" class="text-primary text-success"></textarea>
-        </div>
-    }
-
-    <table class="w-100" role="grid">
-        <tr>
-            <td colspan="2" class="text-primary">
-                实例概况
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <label asp-for="InstanceName">
-                </label>
-            </td>
-            <td>
-                <span>@Model.InstanceName?.ToString()</span>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <label asp-for="ReplicateTime">
-                </label>
-            </td>
-            <td>
-                <form asp-action="ChangeReplicateTime" method="post">
-                    <div asp-validation-summary="All" class="text-danger"></div>
-                    <input asp-for="InstanceName" hidden />
-                    <input asp-for="ReplicateTime" class="w-50" />
-                    <button type="submit" class="btn btn-secondary w-25">提交</button>
-                </form>
-            </td>
-        </tr>
-    </table>
-
-    <div class="container">
-        <div class="row">
-            <div class="col">
-                <form asp-action="StartReplication" method="post">
-                    <div asp-validation-summary="All" class="text-danger"></div>
-
-                    <input asp-for="InstanceName" hidden />
-
-                    <button type="submit" class="btn btn-primary">
-                        启动同步
-                    </button>
-                </form>
+        @if (string.IsNullOrEmpty(Model.ErrorInfo) == false)
+        {
+            <div>
+                <textarea asp-for="ErrorInfo" class="text-danger w-100"></textarea>
             </div>
-            <div class="col">
-                <form asp-action="StopReplication" method="post">
-                    <div asp-validation-summary="All" class="text-danger"></div>
+        }
+
+        @if (string.IsNullOrEmpty(Model.SuccessInfo) == false)
+        {
+            <div>
+                <textarea asp-for="SuccessInfo" class="text-primary text-success w-100"></textarea>
+            </div>
+        }
+
+        <table class="table">
+            <tr>
+                <td colspan="2" class="text-primary">
+                    实例概况
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label asp-for="InstanceName">
+                    </label>
+                </td>
+                <td>
+                    <span>@Model.InstanceName?.ToString()</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label asp-for="ReplicateTime">
+                    </label>
+                </td>
+                <td>
+                    <form asp-action="ChangeReplicateTime" method="post">
+                        <div asp-validation-summary="All" class="text-danger"></div>
+                        <input asp-for="InstanceName" hidden />
+                        <input asp-for="ReplicateTime" class="w-50" />
+                        <button type="submit" class="btn btn-secondary w-25">提交</button>
+                    </form>
+                </td>
+            </tr>
+        </table>
+
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <form asp-action="StartReplication" method="post">
+                        <div asp-validation-summary="All" class="text-danger"></div>
+
+                        <input asp-for="InstanceName" hidden />
+
+                        <button type="submit" class="btn btn-primary">
+                            启动同步
+                        </button>
+                    </form>
+                </div>
+                <div class="col">
+                    <form asp-action="StopReplication" method="post">
+                        <div asp-validation-summary="All" class="text-danger"></div>
+
+                        <input asp-for="InstanceName" hidden />
+
+                        <button type="submit" class="btn btn-secondary">
+                            停止同步
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+
+        <div id="targetDiv" style="height: 600px;" class="overflow-scroll">进度显示</div>
+
+        <form asp-action="RecreateDatabase" method="post">
+            <div asp-validation-summary="All" class="text-danger"></div>
+
+            <div class="card">
+                <div class="card-header text-danger">危险操作</div>
+                <div class="card-body">
 
                     <input asp-for="InstanceName" hidden />
 
-                    <button type="submit" class="btn btn-secondary">
-                        停止同步
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('您确实要重新创建数据库？\r\n\r\n(警告: 这将摧毁实例内全部数据，并无法挽回。请慎重操作)')">
+                        重新创建空白数据库
                     </button>
-                </form>
-
+                </div>
             </div>
-        </div>
+        </form>
+
+
     </div>
-
-
-
-
-
-
-    <div id="targetDiv" style="height: 600px;" class="overflow-scroll">进度显示</div>
-
-    <form asp-action="RecreateDatabase" method="post">
-        <div asp-validation-summary="All" class="text-danger"></div>
-
-        <article>
-            <header class="text-danger">危险操作</header>
-
-            <input asp-for="InstanceName" hidden />
-
-            <button type="submit" class="btn btn-danger" onclick="return confirm('您确实要重新创建数据库？\r\n\r\n(警告: 这将摧毁实例内全部数据，并无法挽回。请慎重操作)')">
-                重新创建空白数据库
-            </button>
-        </article>
-    </form>
-
-
-</article>
+</div>
 
 @section scripts{
     <script>

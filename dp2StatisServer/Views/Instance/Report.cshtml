@@ -1,0 +1,97 @@
+﻿@model dp2StatisServer.ViewModels.ReportViewModel
+@{
+    ViewBag.Title = "报表";
+}
+
+<div class="card">
+    <div class="card-header">报表</div>
+    <div class="card-body">
+
+        @if (string.IsNullOrEmpty(Model.ErrorInfo) == false)
+        {
+            <div>
+                <textarea asp-for="ErrorInfo" class="text-danger w-100"></textarea>
+            </div>
+        }
+
+        @if (string.IsNullOrEmpty(Model.SuccessInfo) == false)
+        {
+            <div>
+                <textarea asp-for="SuccessInfo" class="text-primary text-success w-100"></textarea>
+            </div>
+        }
+
+        @if (string.IsNullOrEmpty(Model.HtmlContent) == false)
+        {
+            <div class="card">
+                <div class="card-header text-primary">创建好的报表</div>
+                <div class="card-body">
+                    <div>@Html.Raw(Model.HtmlContent)</div>
+                </div>
+            </div>
+        }
+
+        <table class="table">
+            <tr>
+                <td colspan="2" class="text-primary">
+                    实例概况
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label asp-for="InstanceName">
+                    </label>
+                </td>
+                <td>
+                    <span>@Model.InstanceName?.ToString()</span>
+                </td>
+            </tr>
+        </table>
+
+
+    </div>
+</div>
+
+<form asp-action="BuildReport" method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="card">
+        <div class="card-header text-primary">创建报表</div>
+        <div class="card-body">
+
+            <input class="form-control" asp-for="InstanceName" hidden />
+
+            <div class="mb-3">
+                <label class="form-label" asp-for="ReportType"></label>
+                <input class="form-control" asp-for="ReportType" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" asp-for="LibraryCode"></label>
+                <input class="form-control" asp-for="LibraryCode" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" asp-for="DateRange"></label>
+                <input class="form-control" asp-for="DateRange" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" asp-for="SortColumn"></label>
+                <input class="form-control" asp-for="SortColumn" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" asp-for="OtherParameters"></label>
+                <textarea class="form-control" asp-for="OtherParameters" ></textarea>
+            </div>
+
+            <button type="submit" class="form-control btn btn-primary">
+                创建报表
+            </button>
+        </div>
+    </div>
+</form>
+
+
+

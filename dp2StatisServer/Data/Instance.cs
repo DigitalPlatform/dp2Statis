@@ -1,9 +1,17 @@
 ﻿using System.Xml;
 
 using DigitalPlatform;
+using DigitalPlatform.IO;
 using DigitalPlatform.LibraryClientOpenApi;
 using DigitalPlatform.LibraryServer.Reporting;
+using DigitalPlatform.Text;
 using DigitalPlatform.Xml;
+using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.VariantTypes;
+using DocumentFormat.OpenXml.Wordprocessing;
+using dp2Statis.Reporting;
+using dp2StatisServer.ViewModels;
+using static dp2Statis.Reporting.DailyReporting;
 
 namespace dp2StatisServer.Data
 {
@@ -350,6 +358,9 @@ namespace dp2StatisServer.Data
                         {
                             OutputHistory(writer, "replication.BuildFirstPlan()");
 
+                            // 重置和每日报表任务有关的各种记忆
+                            ResetDailyReportTask();
+
                             nRet = replication.BuildFirstPlan("*",
                                 channel,
                                 (message) =>
@@ -365,6 +376,11 @@ namespace dp2StatisServer.Data
                                 strError = $"同步过程 BuildFirstPlan() 出错: {strError}";
                                 goto ERROR1;
                             }
+
+                            // 从 task_dom 中获取 "first_operlog_date"
+                            var first_operlog_date = GetFirstOperLogFirstDate();
+                            // 写入 daily_report_end_date.txt 文件
+                            SetRecentDailyReportingDate(first_operlog_date);
                         }
 
                         if (task_dom == null)
@@ -425,6 +441,15 @@ TaskCreationOptions.LongRunning,
 TaskScheduler.Default);
 
             return this._replicationTask;
+        }
+
+        // 重置和每日报表任务有关的各种记忆
+        public void ResetDailyReportTask()
+        {
+            // 删除 daily_report_end_date.txt 文件
+            SetRecentDailyReportingDate(null);
+            // 删除 daily_task.xml 文件
+            File.Delete(GetDailyReportTaskFilePath());
         }
 
         string TaskFileName
@@ -537,6 +562,459 @@ TaskScheduler.Default);
 
         #endregion
 
+
+        #region DailyReport
+
+        internal XmlDocument? _dailyTaskDom = null;
+
+        internal Task<NormalResult>? _dailyTask = null;
+        internal CancellationTokenSource? _cancelDaily = null;
+
+        public void CancelDailyReporting()
+        {
+            _cancelDaily?.Cancel();
+        }
+
+        public Task<NormalResult> BeginDailyReporting(string? info = null)
+        {
+            if (this._dailyTask != null &&
+                (
+                this._dailyTask.Status == TaskStatus.Running
+                || this._dailyTask.Status == TaskStatus.RanToCompletion
+                ))
+                throw new Exception("每日报表任务先前已经启动，无法重复启动");
+
+            if (this._cancelDaily != null)
+                this._cancelDaily.Dispose();
+            this._cancelDaily = new CancellationTokenSource();
+            var token = this._cancelDaily.Token;
+
+            this._dailyTask = Task<NormalResult>.Factory.StartNew(() =>
+            {
+                try
+                {
+                    if (string.IsNullOrEmpty(this._progressFileName) == false)
+                    {
+                        // System.IO.File.Delete(instance._progressFileName);
+                    }
+                    else
+                        this._progressFileName = Path.Combine(DataDir, "replication_progress.txt");
+
+                    string fileName = this._progressFileName;
+
+                    using var s = System.IO.File.Open(fileName,
+                        FileMode.OpenOrCreate,
+                        FileAccess.ReadWrite,
+                        FileShare.ReadWrite);
+                    s.SetLength(0);
+                    // s.Seek(0, SeekOrigin.End);
+                    using var writer = new StreamWriter(s, System.Text.Encoding.UTF8);
+
+                    token.Register(() =>
+                    {
+                        OutputHistory(writer, "每日报表过程已经被终止。");
+                        this._dailyTask = null;
+                    });
+
+                    if (string.IsNullOrEmpty(info) == false)
+                        OutputHistory(writer, info);
+
+                    DailyReporting reporting = new DailyReporting();
+                    reporting.Initialize(this.DbConfig,
+                        GetDailyReportDefDom(),
+                        this.DataDir);
+                    LibraryChannel channel = this.GetChannel();
+                    try
+                    {
+                        string strError = "";
+                        OutputHistory(writer, "replication.Initialize()");
+
+                        var taskFileName = GetDailyReportTaskFilePath();
+                        // var taskFileName = Path.Combine(this.DataDir, "daily_report_task.xml");
+                        XmlDocument? task_dom = null;
+                        if (File.Exists(taskFileName))
+                        {
+                            task_dom = new XmlDocument();
+                            task_dom.Load(taskFileName);
+                        }
+                        else
+                        {
+                            var librarycodes = reporting.ReportConfigBuilder?.GetDailyReportDefLibraryCodeList("");
+                            if (librarycodes == null
+                            || librarycodes.Count == 0)
+                            {
+                                strError = "尚未配置任何分馆的报表。请先配置好报表";
+                                goto ERROR1;
+                            }
+
+                            // return:
+                            //      -1  出错
+                            //      0   报表已经是最新状态。strError 中有提示信息
+                            //      1   获得了可以用于处理的范围字符串。strError 中没有提示信息
+                            int nRet = GetDailyReportRangeString(
+                                out string strDailyEndDate, // 最近一次每日同步的最后日期
+                                out string strRange,
+                                out strError);
+                            if (nRet == -1 || nRet == 0)
+                                goto ERROR1;
+                            var strFirstDate = GetFirstOperLogFirstDate();
+
+                            bool bFirst = false;    // 是否为第一次做
+                            if (strFirstDate == strDailyEndDate)
+                                bFirst = true;
+                            else
+                                bFirst = false;
+
+                            var ret = DailyReporting.BuildPlan(
+        strDailyEndDate, // 最近一次每日同步的最后日期
+        strRange,
+        bFirst,
+        new List<string>(librarycodes),
+        token);
+                            if (ret.Value == -1)
+                            {
+                                strError = ret.ErrorInfo;
+                                goto ERROR1;
+                            }
+                            task_dom = ret.Dom;
+                            task_dom?.Save(taskFileName);
+                        }
+
+                        if (task_dom == null)
+                        {
+                            strError = $"同步过程出错: 首次同步时 _taskDom 为 null";
+                            goto ERROR1;
+                        }
+
+                        OutputHistory(writer, "replication.RunFirstPlan()");
+
+                        FileType fileType = FileType.RML;
+                        // 每日增量创建报表
+                        // return:
+                        //      -1  出错，或者中断
+                        //      0   没有任何配置的报表
+                        //      1   成功
+                        var run_ret = reporting.RunPlan(
+                            ref task_dom,
+                            fileType,
+                            (message) =>
+                            {
+                                OutputHistory(writer, message);
+                            },
+                            token);
+                        task_dom.Save(taskFileName);
+                        if (run_ret.Value == -1)
+                        {
+                            strError = $"创建报表过程出错: {run_ret.ErrorInfo}";
+                            goto ERROR1;
+                        }
+
+                        // 记忆最近一次 dailyreporting 时间
+                        if (string.IsNullOrEmpty(run_ret.EndDate) == false)
+                        {
+                            SetRecentDailyReportingDate(run_ret.EndDate);
+                        }
+
+                        // 创建每日报表全部完成后，要删除 task 文件
+                        File.Delete(taskFileName);
+
+                        OutputHistory(writer, "每日报表成功完成。");
+                        return new NormalResult();
+                    ERROR1:
+                        OutputHistory(writer, strError);
+                        return new NormalResult
+                        {
+                            Value = -1,
+                            ErrorInfo = strError
+                        };
+                    }
+                    catch(Exception ex)
+                    {
+                        string strError = $"BeginDailyReporting() 出现异常: {ExceptionUtil.GetDebugText(ex)}";
+                        OutputHistory(writer, strError);
+                        return new NormalResult
+                        {
+                            Value = -1,
+                            ErrorInfo = strError
+                        };
+                    }
+                    finally
+                    {
+                        this.ReturnChannel(channel);
+                    }
+                }
+                finally
+                {
+                    this._dailyTask = null;
+                }
+            },
+token,
+TaskCreationOptions.LongRunning,
+TaskScheduler.Default);
+
+            return this._dailyTask;
+        }
+
+        string GetDailyReportTaskFilePath()
+        {
+            return Path.Combine(this.DataDir, "daily_report_task.xml");
+        }
+
+        string GetRecentDailyReportingDate()
+        {
+            if (this.DataDir == null)
+                throw new ArgumentException("this.DataDir == null");
+
+            // 读取最近一次 dailyreporting 时间
+            string filename = Path.Combine(this.DataDir, "daily_report_end_date.txt");
+            if (File.Exists(filename) == false)
+                return "";
+            return File.ReadAllText(filename);
+        }
+
+        // 记忆最近一次 dailyreporting 时间
+        void SetRecentDailyReportingDate(string? date)
+        {
+            string filename = Path.Combine(this.DataDir, "daily_report_end_date.txt");
+            if (date == null)
+            {
+                File.Delete(filename);
+                return;
+            }
+            File.WriteAllText(filename, date);
+        }
+
+        // 获得即将执行的每日报表的时间范围
+        // return:
+        //      -1  出错
+        //      0   报表已经是最新状态。strError 中有提示信息
+        //      1   获得了可以用于处理的范围字符串。strError 中没有提示信息
+        int GetDailyReportRangeString(
+            out string strDailyEndDate,
+            // out string strLastDay,
+            out string strRange,
+            out string strError)
+        {
+            // strLastDay = "";
+            strDailyEndDate = "";
+            strRange = "";
+            strError = "";
+
+            // 读取最近一次 dailyreporting 时间
+            string strLastDay = GetRecentDailyReportingDate();
+            if (string.IsNullOrEmpty(strLastDay) == true)
+            {
+                strError = "尚未配置报表创建起点日期";
+                return -1;
+            }
+
+            DateTime start;
+            try
+            {
+                start = DateTimeUtil.Long8ToDateTime(strLastDay);
+            }
+            catch
+            {
+                strError = "开始日期 '" + strLastDay + "' 不合法。应该是 8 字符的日期格式";
+                return -1;
+            }
+
+            // string strDailyEndDate = "";
+            {
+                // 读入最近一次同步(上次同步)的断点信息
+                // parameters:
+                //      strEndDate  [out] 返回上次同步的末端日期
+                // return:
+                //      -1  出错
+                //      0   正常
+                //      1   首次创建尚未完成
+                int nRet = LoadDailyBreakPoint(
+                    LogType.OperLog,
+                    out strDailyEndDate,
+                    out long lIndex,
+                    out string strState,
+                    out strError);
+                if (nRet == -1)
+                {
+                    strError = "获得日志同步最后日期时出错: " + strError;
+                    return -1;
+                }
+                if (nRet == 1)
+                {
+                    strError = "首次创建本地存储尚未完成，无法创建报表";
+                    return -1;
+                }
+            }
+
+            DateTime daily_end;
+            try
+            {
+                daily_end = DateTimeUtil.Long8ToDateTime(strDailyEndDate);
+            }
+            catch
+            {
+                strError = "日志同步最后日期 '" + strDailyEndDate + "' 不合法。应该是 8 字符的日期格式";
+                return -1;
+            }
+
+            // 两个日期都不允许超过今天
+            if (start >= daily_end)
+            {
+                // strError = "上次统计最末日期 '"+strLastDay+"' 不应晚于 日志同步最后日期 " + strDailyEndDate + " 的前一天";
+                // return -1;
+                strError = "报表已经是最新";
+                if (start > daily_end)
+                    strError += " (警告!" + strLastDay + "有误)";
+                return 0;
+            }
+
+            DateTime end = daily_end - new TimeSpan(1, 0, 0, 0, 0);
+            string strEndDate = DateTimeUtil.DateTimeToString8(end);
+
+            if (strLastDay == strEndDate)
+                strRange = strLastDay;  // 缩略表示
+            else
+                strRange = strLastDay + "-" + strEndDate;
+            return 1;
+        }
+
+        string? GetFirstOperLogFirstDate()
+        {
+            return _taskDom?.DocumentElement?.GetAttribute("first_operlog_date");
+        }
+
+        // 读入最近一次同步(上次同步)的断点信息
+        // parameters:
+        //      strEndDate  [out] 返回上次同步的末端日期
+        // return:
+        //      -1  出错
+        //      0   正常
+        //      1   首次创建尚未完成
+        int LoadDailyBreakPoint(
+            LogType logType,
+            out string strEndDate,
+            out long lIndex,
+            out string strState,
+            //out string strFirstOperLogDate,
+            out string strError)
+        {
+            strError = "";
+            strEndDate = "";
+            strState = "";
+            lIndex = 0;
+            //strFirstOperLogDate = "";
+
+            string strFileName = Path.Combine(this.DataDir, "replication_task.xml");
+            XmlDocument dom = new XmlDocument();
+            try
+            {
+                dom.Load(strFileName);
+            }
+            catch (FileNotFoundException)
+            {
+                dom.LoadXml("<root />");
+            }
+            catch (Exception ex)
+            {
+                strError = "装载文件 '" + strFileName + "' 时出错: " + ex.Message;
+                return -1;
+            }
+
+            //strFirstOperLogDate = dom.DocumentElement?.GetAttribute("first_operlog_date");
+
+            string strPrefix = "";
+            if ((logType & LogType.AccessLog) != 0)
+                strPrefix = "accessLog_";
+
+            strEndDate = dom.DocumentElement?.GetAttribute(strPrefix + "end_date");
+            int nRet = dom.DocumentElement.GetIntegerParam(
+                strPrefix + "index",
+                0,
+                out lIndex,
+                out strError);
+            if (nRet == -1)
+                return -1;
+
+            // state 元素中的状态，是首次创建本地缓存后总体的状态，是操作日志和访问日志都复制过来以后，才会设置为 "daily" 
+            strState = dom.DocumentElement?.GetAttribute(
+                "state");
+            if (strState != "daily")
+                return 1;   // 首次创建尚未完成
+            return 0;
+        }
+
+
+
+        public string GetDailyReportDefFilePath()
+        {
+            var fileName = Path.Combine(this.DataDir, "daily_report_def.xml");
+            return fileName;
+        }
+
+        public ReportConfigBuilder GetDailyReportDefDom()
+        {
+            return ReportConfigBuilder.Load(this.DataDir,
+                "daily_report_def.xml",
+                ServerContext.ReportDefDirectory);
+            /*
+            var fileName = GetDailyReportDefFilePath();
+            var dom = new XmlDocument();
+            try
+            {
+                dom.Load(fileName);
+            }
+            catch (FileNotFoundException)
+            {
+                dom.LoadXml("<root />");
+            }
+
+            return dom;
+            */
+        }
+
+        public void SaveDailyReportDefDom(ReportConfigBuilder builder)
+        {
+            builder.Save();
+            /*
+            var fileName = GetDailyReportDefFilePath();
+            dom.Save(fileName);
+            */
+        }
+
+        #endregion
+
+        #region 需要调用 dp2library API 的功能
+
+        // 注: 相比原始 API，主动添加了一个 "" 馆代码
+        public List<string> GetLibraryCodes()
+        {
+            var channel = this.GetChannel();
+            try
+            {
+                var request = new GetSystemParameterRequest
+                {
+                    StrCategory = "system",
+                    StrName = "libraryCodes",
+                };
+                var response = channel.GetSystemParameterAsync(request).Result;
+                long lRet = response.GetSystemParameterResult.Value;
+                var error = response.GetSystemParameterResult.ErrorInfo;
+                if (lRet == -1)
+                    throw new Exception(error);
+
+                var value = response.StrValue;
+                var results = new List<string>(value.Split(","));
+                if (results.IndexOf("") == -1)
+                    results.Insert(0, "");  // 添加一个 ""
+                return results;
+            }
+            finally
+            {
+                this.ReturnChannel(channel);
+            }
+        }
+
+        #endregion
     }
 
 }

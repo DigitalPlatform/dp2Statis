@@ -1,8 +1,0 @@
-<instance>
-  <name>instance1</name>
-  <appServerUrl>http://localhost/dp2library/xe/rest</appServerUrl>
-  <appServer url="http://localhost/dp2library/xe/rest" userName="supervisor" password="test1" />
-  <database serverName="localhost" userName="s_instance1" password="12345" databaseName="s_instance1" />
-  <description>
-  </description>
-</instance>

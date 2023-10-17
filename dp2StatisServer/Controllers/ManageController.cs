@@ -13,7 +13,7 @@ namespace dp2StatisServer.Controllers
 
         public IActionResult Index()
         {
-            if (IsSupervisor() == false)
+            if (this.IsSupervisor() == false)
                 return RedirectToAction("Login", "Home");
 
             return View(NewManageModel());
@@ -37,7 +37,7 @@ namespace dp2StatisServer.Controllers
         [HttpGet]
         public IActionResult CreateInstance()
         {
-            if (IsSupervisor() == false)
+            if (this.IsSupervisor() == false)
                 return RedirectToAction("Home", "Home");
 
             var model = new EditInstanceViewModel
@@ -81,7 +81,7 @@ namespace dp2StatisServer.Controllers
         [HttpGet]
         public IActionResult ChangeInstance(string name)
         {
-            if (IsSupervisor() == false)
+            if (this.IsSupervisor() == false)
                 return RedirectToAction("Home", "Home");
 
             var instance = GetInstanceRepository().FindInstance(name);
@@ -156,7 +156,7 @@ namespace dp2StatisServer.Controllers
         [HttpGet]
         public IActionResult DeleteInstance(string name)
         {
-            if (IsSupervisor() == false)
+            if (this.IsSupervisor() == false)
                 return RedirectToAction("Home", "Home");
 
             var instance = GetInstanceRepository().FindInstance(name);
@@ -183,7 +183,7 @@ namespace dp2StatisServer.Controllers
         [HttpPost]
         public IActionResult DeleteInstance(EditInstanceViewModel model)
         {
-            if (IsSupervisor() == false)
+            if (this.IsSupervisor() == false)
                 return RedirectToAction("Home", "Home");
 
             if (ModelState.IsValid)

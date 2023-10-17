@@ -130,7 +130,7 @@ namespace DigitalPlatform.LibraryServer.Reporting
 
         public bool GetFresh()
         {
-            XmlElement nodeProperty = this._cfgDom.DocumentElement.SelectSingleNode("property") as XmlElement;
+            var nodeProperty = this._cfgDom.DocumentElement?.SelectSingleNode("property") as XmlElement;
             if (nodeProperty != null)
             {
                 string strError = "";
@@ -147,7 +147,9 @@ namespace DigitalPlatform.LibraryServer.Reporting
             return false;
         }
 
-
+        // return:
+        //      -1  出错
+        //      其它  返回实际处理的表格内容行数(注意，不包括标题行、合计行等)
         public int OutputRmlReport<T>(
             IEnumerable<T> data_reader,
             object sum,
@@ -179,6 +181,7 @@ namespace DigitalPlatform.LibraryServer.Reporting
                 OperLogLoader.TryCreateDir(Path.GetDirectoryName(strOutputFileName));
             }
 
+            int line_count = 0;
 #if NO
             try
             {
@@ -224,7 +227,7 @@ namespace DigitalPlatform.LibraryServer.Reporting
                 if (columns_dom != null && columns_dom.DocumentElement != null)
                     columns_dom.DocumentElement.WriteTo(writer);
 
-                OutputRmlTable(
+                line_count = OutputRmlTable(
                     data_reader,
                     sum,
                     writer);
@@ -254,7 +257,7 @@ namespace DigitalPlatform.LibraryServer.Reporting
                 return -1;
 #endif
 
-            return 1;
+            return line_count;
         }
 
         static Jurassic.ScriptEngine engine = null;
@@ -276,7 +279,9 @@ namespace DigitalPlatform.LibraryServer.Reporting
         // 本函数负责写入 <table> 元素
         // parameters:
         //      nTopLines   顶部预留多少行
-        void OutputRmlTable<T>(
+        // return:
+        //      返回实际处理了 data_reader 中多少行内容
+        int OutputRmlTable<T>(
             IEnumerable<T> data_reader,
             object sum,
             XmlTextWriter writer,
@@ -646,6 +651,7 @@ out object o);
             }
 
             writer.WriteEndElement();   // </table>
+            return nLineCount;
         }
 
         public static string Int64ToPrice(Int64 v)

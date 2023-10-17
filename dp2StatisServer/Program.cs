@@ -1,8 +1,7 @@
 using System;
-using dp2StatisServer.Data;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
-// using static SnCenter.Controllers.ApiController;
+using dp2StatisServer.Data;
 
 
 namespace dp2StatisServer
@@ -112,16 +111,26 @@ namespace dp2StatisServer
             app.UseSession();
 
             app.MapControllerRoute("instance",
-                             "instance/{name}/{action}",
+                             "{controller}/{name}/{action}",
                              defaults: new
                              {
                                  controller = "instance",
                                  name = "[default]",
                                  action = "index"
                              });
+            /*
+            app.MapControllerRoute(
+    name: "manage",
+    pattern: "manage/{action=Index}");
+            app.MapControllerRoute(
+name: "home",
+pattern: "home/{action=Index}");
+            */
+            /*
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
+            */
             /*
             app.MapControllerRoute(
                 name: "instance",

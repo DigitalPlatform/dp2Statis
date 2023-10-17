@@ -1,4 +1,0 @@
-﻿21:11:29 replication.Initialize()
-21:11:29 replication.RunFirstPlan()
-21:11:29 正在处理日志文件 20230907
-21:11:29 同步过程成功完成。

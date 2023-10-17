@@ -5,18 +5,25 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using System.Xml;
+using System.Data;
 
 using Microsoft.EntityFrameworkCore;
+using static MoreLinq.Extensions.LeftJoinExtension;
 
 using DigitalPlatform.IO;
 using DigitalPlatform.Text;
 using dp2Statis.Reporting;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace DigitalPlatform.LibraryServer.Reporting
 {
     public class Report
     {
-        public static void BuildReport(LibraryContext context,
+        // return:
+        //      -1  出错
+        //      0   没有创建文件(因为输出的表格为空)
+        //      >=1   成功创建文件
+        public static int BuildReport(LibraryContext context,
     Hashtable param_table,
     ReportWriter writer,
     string strOutputFileName)
@@ -45,98 +52,98 @@ namespace DigitalPlatform.LibraryServer.Reporting
             switch (writer.Algorithm)
             {
                 case "101":
-                    BuildReport_101(context,
+                    return BuildReport_101(context,
 param_table,
 strStartDate,
 strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
-                    // TODO: 增加 102 表
+                // TODO: 增加 102 表
+                case "102":
+                    return BuildReport_102(context,
+param_table,    // 注意其中包含 strNameTable
+strStartDate,
+strEndDate,
+writer,
+macro_table,
+strOutputFileName);
+                // TODO: 增加 102 表
                 case "111":
-                    BuildReport_111(context,
+                    return BuildReport_111(context,
 param_table,
 strStartDate,
 strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "121":
-                    BuildReport_121(context,
+                    return BuildReport_121(context,
 param_table,
 strStartDate,
 strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "131":
-                    BuildReport_131(context,
+                    return BuildReport_131(context,
 param_table,
 strStartDate,
 strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "141":
-                    BuildReport_141(context,
+                    return BuildReport_141(context,
 param_table,
 strStartDate,
 strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "201":
-                    BuildReport_201(context,
+                    return BuildReport_201(context,
 param_table,
 strStartDate,
 strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "202":
-                    BuildReport_202(context,
+                    return BuildReport_202(context,
 param_table,
 strStartDate,
 strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "212":
-                    BuildReport_212(context,
+                    return BuildReport_212(context,
 param_table,
 strStartDate,
 strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
+                // 注: 213 表已经废止
                 case "301":
-                    BuildReport_301(context,
+                    return BuildReport_301(context,
 param_table,
 strStartDate,
 strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "302":
-                    BuildReport_302(context,
+                    return BuildReport_302(context,
 param_table,
 strStartDate,
 strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "411":
-                    BuildReport_411(context,
+                    return BuildReport_411(context,
 param_table,
 strStartDate,
 strEndDate,
@@ -144,9 +151,8 @@ strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "412":
-                    BuildReport_412(context,
+                    return BuildReport_412(context,
 param_table,
 strStartDate,
 strEndDate,
@@ -154,72 +160,64 @@ strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "421":
-                    BuildReport_421(context,
+                    return BuildReport_421(context,
 param_table,
 strStartDate,
 strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "422":
-                    BuildReport_422(context,
+                    return BuildReport_422(context,
 param_table,
 strStartDate,
 strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "431":
-                    BuildReport_431(context,
+                    return BuildReport_431(context,
 param_table,
 strStartDate,
 strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "432":
-                    BuildReport_432(context,
+                    return BuildReport_432(context,
 param_table,
 strStartDate,
 strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "441":
-                    BuildReport_441(context,
+                    return BuildReport_441(context,
 param_table,
 strStartDate,
 strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "442":
-                    BuildReport_442(context,
+                    return BuildReport_442(context,
 param_table,
 strStartDate,
 strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "443":
-                    BuildReport_443(context,
+                    return BuildReport_443(context,
 param_table,
 strStartDate,
 strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "451":
-                    BuildReport_411(context,
+                    return BuildReport_411(context,
 param_table,
 strStartDate,
 strEndDate,
@@ -227,9 +225,8 @@ strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "452":
-                    BuildReport_412(context,
+                    return BuildReport_412(context,
 param_table,
 strStartDate,
 strEndDate,
@@ -237,70 +234,62 @@ strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "471":
-                    BuildReport_471(context,
+                    return BuildReport_471(context,
 param_table,
 strStartDate,
 strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "472":
-                    BuildReport_472(context,
+                    return BuildReport_472(context,
 param_table,
 strStartDate,
 strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "481":
-                    BuildReport_481(context,
+                    return BuildReport_481(context,
 param_table,
 strStartDate,
 strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "482":
-                    BuildReport_482(context,
+                    return BuildReport_482(context,
 param_table,
 strStartDate,
 strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "491":
-                    BuildReport_491(context,
+                    return BuildReport_491(context,
 param_table,
 strStartDate,
 strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "492":
-                    BuildReport_492(context,
+                    return BuildReport_492(context,
 param_table,
 strStartDate,
 strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
                 case "493":
-                    BuildReport_493(context,
+                    return BuildReport_493(context,
 param_table,
 strStartDate,
 strEndDate,
 writer,
 macro_table,
 strOutputFileName);
-                    return;
             }
 
             throw new Exception($"算法 {writer.Algorithm} 没有找到");
@@ -311,9 +300,21 @@ strOutputFileName);
             return StringUtil.ParseTwoPart(location, "/")[0];
         }
 
+        // 获得一个参数值。带有检查参数是否具备的功能
+        public static string GetParam(Hashtable param_table,
+            string name)
+        {
+            if (param_table.ContainsKey(name) == false)
+                throw new ArgumentException($"尚未指定 param_table 中的 {name} 参数");
+
+#pragma warning disable CS8603 // 可能返回 null 引用。
+            return param_table[name] as string;
+#pragma warning restore CS8603 // 可能返回 null 引用。
+        }
+
         // 获取对象操作量。按分类。注意操作者既可能是工作人员，也可能是读者
         // parameters:
-        public static void BuildReport_493(LibraryContext context,
+        public static int BuildReport_493(LibraryContext context,
 Hashtable param_table,
 string strStartDate,
 string strEndDate,
@@ -321,7 +322,10 @@ ReportWriter writer,
 Hashtable macro_table,
 string strOutputFileName)
         {
-            string classType = param_table["classType"] as string;
+            string classType = GetParam(param_table, "classType");
+
+            // string classType = param_table["classType"] as string;
+
             // 注: libraryCode 要求是一个馆代码，或者 *
             string libraryCode = param_table["libraryCode"] as string;
             string libraryCode0 = libraryCode;
@@ -396,7 +400,7 @@ string strOutputFileName)
                     && (libraryCode == "*" || b.LibraryCode.Contains(libraryCode))
                     && string.Compare(b.Date, strStartDate) >= 0
                     && string.Compare(b.Date, strEndDate) <= 0)
-                .LeftJoin(
+                .LeftJoin1(
                     context.Patrons,
                     oper => oper.Operator,
                     patron => patron.Barcode,
@@ -406,7 +410,7 @@ string strOutputFileName)
                         oper,
                         patron, // 注意可能为空
                     })
-                .LeftJoin(
+                .LeftJoin1(
                     context.Users,
                     j1 => j1.oper.Operator,
                     user => user.ID,
@@ -422,7 +426,7 @@ string strOutputFileName)
                     })
                 .Where(x => (x.UserLibraryCode != null && (libraryCode == "*" || x.UserLibraryCode.IndexOf(libraryCode) != -1))
                     || (x.PatronLibraryCode != null && (libraryCode0 == "*" || x.PatronLibraryCode == libraryCode0)))
-                .LeftJoin(
+                .LeftJoin1(
                     context.Keys,
                     j2 => new { recpath = j2.oper.XmlRecPath, type = classType, index = 0 },
                     key => new { recpath = key.BiblioRecPath, type = key.Type, index = key.Index },
@@ -443,6 +447,10 @@ string strOutputFileName)
                 .OrderBy(x => x.Class)
                 .ToList();
 
+            if (items.Count == 0
+    && PassWrite(param_table))
+                return 0;
+
             int nRet = writer.OutputRmlReport(
             items,
             null,
@@ -451,11 +459,12 @@ string strOutputFileName)
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+            return nRet + 1;
         }
 
         // 获取对象操作量。按操作者。注意操作者既可能是工作人员，也可能是读者
         // parameters:
-        public static void BuildReport_492(LibraryContext context,
+        public static int BuildReport_492(LibraryContext context,
 Hashtable param_table,
 string strStartDate,
 string strEndDate,
@@ -477,7 +486,7 @@ string strOutputFileName)
                 && (libraryCode == "*" || b.LibraryCode.Contains(libraryCode))
                 && string.Compare(b.Date, strStartDate) >= 0
                 && string.Compare(b.Date, strEndDate) <= 0)
-                .LeftJoin(
+                .LeftJoin1(
                 context.Patrons,
                 oper => oper.Operator,
                 patron => patron.Barcode,
@@ -491,7 +500,7 @@ string strOutputFileName)
                     oper.Size,
                 }
                 )
-                .LeftJoin(
+                .LeftJoin1(
                 context.Users,
                 oper => oper.Operator,
                 user => user.ID,
@@ -518,7 +527,7 @@ string strOutputFileName)
                 GetSize = g.Sum(x => x.GetSize),
                 TotalCount = g.Sum(x => x.TotalCount),
             })
-                .LeftJoin(
+                .LeftJoin1(
                 context.Patrons,
                 oper => oper.Operator,
                 patron => patron.Barcode,
@@ -534,6 +543,10 @@ string strOutputFileName)
                 ).OrderBy(x => x.Operator)
             .ToList();
 
+            if (items.Count == 0
+    && PassWrite(param_table))
+                return 0;
+
             int nRet = writer.OutputRmlReport(
             items,
             null,
@@ -542,11 +555,13 @@ string strOutputFileName)
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+
+            return nRet + 1;
         }
 
         // 获取对象流水
         // parameters:
-        public static void BuildReport_491(LibraryContext context,
+        public static int BuildReport_491(LibraryContext context,
 Hashtable param_table,
 string strStartDate,
 string strEndDate,
@@ -568,7 +583,7 @@ string strOutputFileName)
                 && (libraryCode == "*" || b.LibraryCode.Contains(libraryCode))
                 && string.Compare(b.Date, strStartDate) >= 0
                 && string.Compare(b.Date, strEndDate) <= 0)
-                .LeftJoin(
+                .LeftJoin1(
                 context.Patrons,
                 oper => oper.Operator,
                 patron => patron.Barcode,
@@ -584,7 +599,7 @@ string strOutputFileName)
                     oper.ObjectID,
                 }
                 )
-                .LeftJoin(
+                .LeftJoin1(
                 context.Users,
                 oper => oper.Operator,
                 user => user.ID,
@@ -602,7 +617,7 @@ string strOutputFileName)
                 )
                 .Where(x => (x.UserLibraryCode != null && (libraryCode == "*" || x.UserLibraryCode.IndexOf(libraryCode) != -1))
                 || (x.PatronLibraryCode != null && (libraryCode0 == "*" || x.PatronLibraryCode == libraryCode0)))
-            .LeftJoin(
+            .LeftJoin1(
                 context.Biblios,
                 oper => oper.XmlRecPath,
                 biblio => biblio.RecPath,
@@ -620,6 +635,10 @@ string strOutputFileName)
             .OrderBy(x => x.OperTime)
             .ToList();
 
+            if (items.Count == 0
+    && PassWrite(param_table))
+                return 0;
+
             int nRet = writer.OutputRmlReport(
             items,
             null,
@@ -628,11 +647,12 @@ string strOutputFileName)
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+            return nRet + 1;
         }
 
         // 入馆登记工作量，按门名称
         // parameters:
-        public static void BuildReport_482(LibraryContext context,
+        public static int BuildReport_482(LibraryContext context,
 Hashtable param_table,
 string strStartDate,
 string strEndDate,
@@ -686,6 +706,10 @@ string strOutputFileName)
                 .ToList();
                 */
 
+            if (items.Count == 0
+    && PassWrite(param_table))
+                return 0;
+
             int nRet = writer.OutputRmlReport(
             items,
             null,
@@ -694,13 +718,14 @@ string strOutputFileName)
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+            return nRet + 1;
         }
 
 
         // 入馆登记流水
         // 用读者记录的馆代码来进行分馆筛选; 或者用日志记录的馆代码来筛选?
         // parameters:
-        public static void BuildReport_481(LibraryContext context,
+        public static int BuildReport_481(LibraryContext context,
 Hashtable param_table,
 string strStartDate,
 string strEndDate,
@@ -721,7 +746,7 @@ string strOutputFileName)
                 && (libraryCode == "*" || b.LibraryCode.Contains(libraryCode))
                 && string.Compare(b.Date, strStartDate) >= 0
                 && string.Compare(b.Date, strEndDate) <= 0)
-                .LeftJoin(
+                .LeftJoin1(
                 context.Patrons,
                 oper => oper.ReaderBarcode,
                 patron => patron.Barcode,
@@ -739,6 +764,10 @@ string strOutputFileName)
             .OrderBy(x => x.OperTime)
             .ToList();
 
+            if (items.Count == 0
+    && PassWrite(param_table))
+                return 0;
+
             int nRet = writer.OutputRmlReport(
             items,
             null,
@@ -747,12 +776,13 @@ string strOutputFileName)
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+            return nRet + 1;
         }
 
 
         // 违约金工作量，按操作者
         // parameters:
-        public static void BuildReport_472(LibraryContext context,
+        public static int BuildReport_472(LibraryContext context,
 Hashtable param_table,
 string strStartDate,
 string strEndDate,
@@ -820,6 +850,10 @@ string strOutputFileName)
             .OrderBy(x => x.Operator)
             .ToList();
 
+            if (items.Count == 0
+    && PassWrite(param_table))
+                return 0;
+
             int nRet = writer.OutputRmlReport(
             items,
             null,
@@ -828,6 +862,7 @@ string strOutputFileName)
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+            return nRet + 1;
         }
 
         public static string Substract(string p1, string p2)
@@ -854,7 +889,7 @@ string strOutputFileName)
         // 违约金流水
         // 用读者记录的馆代码来进行分馆筛选; 或者用日志记录的馆代码来筛选?
         // parameters:
-        public static void BuildReport_471(LibraryContext context,
+        public static int BuildReport_471(LibraryContext context,
 Hashtable param_table,
 string strStartDate,
 string strEndDate,
@@ -882,7 +917,7 @@ string strOutputFileName)
                 && (libraryCode == "*" || b.LibraryCode.Contains(libraryCode))
                 && string.Compare(b.Date, strStartDate) >= 0
                 && string.Compare(b.Date, strEndDate) <= 0)
-                .LeftJoin(
+                .LeftJoin1(
                 context.Patrons,
                 oper => oper.ReaderBarcode,
                 patron => patron.Barcode,
@@ -901,7 +936,7 @@ string strOutputFileName)
                     oper.Operator,
                 }
                 )
-                .LeftJoin(context.Items,
+                .LeftJoin1(context.Items,
                 oper => oper.ItemBarcode,
                 item => item.ItemBarcode,
                 (oper, item) => new
@@ -919,7 +954,7 @@ string strOutputFileName)
                     oper.OperTime,
                     oper.Operator
                 })
-            .LeftJoin(
+            .LeftJoin1(
                 context.Biblios,
                 oper => oper.BiblioRecPath,
                 biblio => biblio.RecPath,
@@ -961,6 +996,10 @@ string strOutputFileName)
 
             // TODO: 进行 sum?
 
+            if (items.Count == 0
+    && PassWrite(param_table))
+                return 0;
+
             int nRet = writer.OutputRmlReport(
             items,
             null,
@@ -969,11 +1008,12 @@ string strOutputFileName)
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+            return nRet + 1;
         }
 
         // 出纳工作量，按馆藏地点
         // parameters:
-        public static void BuildReport_443(LibraryContext context,
+        public static int BuildReport_443(LibraryContext context,
 Hashtable param_table,
 string strStartDate,
 string strEndDate,
@@ -994,7 +1034,7 @@ string strOutputFileName)
                 && (libraryCode == "*" || b.LibraryCode.Contains(libraryCode))
                 && string.Compare(b.Date, strStartDate) >= 0
                 && string.Compare(b.Date, strEndDate) <= 0)
-                .LeftJoin(context.Items,
+                .LeftJoin1(context.Items,
                 oper => oper.ItemBarcode,
                 item => item.ItemBarcode,
                 (oper, item) => new
@@ -1021,6 +1061,10 @@ string strOutputFileName)
             .OrderBy(x => x.Location)
             .ToList();
 
+            if (items.Count == 0
+    && PassWrite(param_table))
+                return 0;
+
             int nRet = writer.OutputRmlReport(
             items,
             null,
@@ -1029,12 +1073,13 @@ string strOutputFileName)
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+            return nRet + 1;
         }
 
 
         // 出纳工作量，按操作者
         // parameters:
-        public static void BuildReport_442(LibraryContext context,
+        public static int BuildReport_442(LibraryContext context,
 Hashtable param_table,
 string strStartDate,
 string strEndDate,
@@ -1080,6 +1125,10 @@ string strOutputFileName)
             .OrderBy(x => x.Operator)
             .ToList();
 
+            if (items.Count == 0
+    && PassWrite(param_table))
+                return 0;
+
             int nRet = writer.OutputRmlReport(
             items,
             null,
@@ -1088,13 +1137,14 @@ string strOutputFileName)
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+            return nRet + 1;
         }
 
 
         // 出纳流水
         // 用读者记录的馆代码来进行分馆筛选; 或者用日志记录的馆代码来筛选?
         // parameters:
-        public static void BuildReport_441(LibraryContext context,
+        public static int BuildReport_441(LibraryContext context,
 Hashtable param_table,
 string strStartDate,
 string strEndDate,
@@ -1121,7 +1171,7 @@ string strOutputFileName)
                 && (libraryCode == "*" || b.LibraryCode.Contains(libraryCode))
                 && string.Compare(b.Date, strStartDate) >= 0
                 && string.Compare(b.Date, strEndDate) <= 0)
-                .LeftJoin(
+                .LeftJoin1(
                 context.Patrons,
                 oper => oper.ReaderBarcode,
                 patron => patron.Barcode,
@@ -1136,7 +1186,7 @@ string strOutputFileName)
                     oper.Operator,
                 }
                 )
-                .LeftJoin(context.Items,
+                .LeftJoin1(context.Items,
                 oper => oper.ItemBarcode,
                 item => item.ItemBarcode,
                 (oper, item) => new
@@ -1150,7 +1200,7 @@ string strOutputFileName)
                     oper.OperTime,
                     oper.Operator
                 })
-            .LeftJoin(
+            .LeftJoin1(
                 context.Biblios,
                 oper => oper.BiblioRecPath,
                 biblio => biblio.RecPath,
@@ -1169,6 +1219,10 @@ string strOutputFileName)
             .OrderBy(x => x.OperTime)
             .ToList();
 
+            if (items.Count == 0
+    && PassWrite(param_table))
+                return 0;
+
             int nRet = writer.OutputRmlReport(
             items,
             null,
@@ -1177,12 +1231,13 @@ string strOutputFileName)
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+            return nRet + 1;
         }
 
         // 册登记工作量
         // 和 BuildReport_412() 的差异是多输出了一个 transfer(转移) 列
         // parameters:
-        public static void BuildReport_432(LibraryContext context,
+        public static int BuildReport_432(LibraryContext context,
 Hashtable param_table,
 string strStartDate,
 string strEndDate,
@@ -1201,7 +1256,7 @@ string strOutputFileName)
                 .Where(b => b.Operation == "setEntity"
             && string.Compare(b.Date, strStartDate) >= 0
             && string.Compare(b.Date, strEndDate) <= 0)
-                .LeftJoin(
+                .LeftJoin1(
                 context.Users,
                 oper => oper.Operator,
                 user => user.ID,
@@ -1235,6 +1290,10 @@ string strOutputFileName)
             .OrderBy(x => x.Operator)
             .ToList();
 
+            if (items.Count == 0
+    && PassWrite(param_table))
+                return 0;
+
             int nRet = writer.OutputRmlReport(
             items,
             null,
@@ -1243,12 +1302,13 @@ string strOutputFileName)
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+            return nRet + 1;
         }
 
         // 册登记流水
         // 和 BuildReport_411() 的区别是多输出一列 ItemBarcode
         // parameters:
-        public static void BuildReport_431(LibraryContext context,
+        public static int BuildReport_431(LibraryContext context,
 Hashtable param_table,
 string strStartDate,
 string strEndDate,
@@ -1273,7 +1333,7 @@ string strOutputFileName)
                 .Where(b => b.Operation == "setEntity"
             && string.Compare(b.Date, strStartDate) >= 0
             && string.Compare(b.Date, strEndDate) <= 0)
-                .LeftJoin(
+                .LeftJoin1(
                 context.Users,
                 oper => oper.Operator,
                 user => user.ID,
@@ -1289,7 +1349,7 @@ string strOutputFileName)
                 }
                 )
                 .Where(x => libraryCode == "*" || x.UserLibraryCode.IndexOf(libraryCode) != -1)
-            .LeftJoin(
+            .LeftJoin1(
                 context.Biblios,
                 oper => oper.BiblioRecPath,
                 biblio => biblio.RecPath,
@@ -1303,7 +1363,7 @@ string strOutputFileName)
                     Operator = oper.Operator
                 }
             )
-            .LeftJoin(
+            .LeftJoin1(
                 context.Items,
                 oper => oper.ItemRecPath,
                 item => item.ItemRecPath,
@@ -1320,6 +1380,10 @@ string strOutputFileName)
             ).OrderBy(x => x.OperTime)
             .ToList();
 
+            if (items.Count == 0
+    && PassWrite(param_table))
+                return 0;
+
             int nRet = writer.OutputRmlReport(
             items,
             null,
@@ -1328,11 +1392,12 @@ string strOutputFileName)
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+            return nRet + 1;
         }
 
         // 编目工作量
         // parameters:
-        public static void BuildReport_422(LibraryContext context,
+        public static int BuildReport_422(LibraryContext context,
 Hashtable param_table,
 string strStartDate,
 string strEndDate,
@@ -1352,7 +1417,7 @@ string strOutputFileName)
                 .Where(b => b.Operation == "setBiblioInfo"
             && string.Compare(b.Date, strStartDate) >= 0
             && string.Compare(b.Date, strEndDate) <= 0)
-                .LeftJoin(
+                .LeftJoin1(
                 context.Users,
                 oper => oper.Operator,
                 user => user.ID,
@@ -1384,6 +1449,10 @@ string strOutputFileName)
             .OrderBy(x => x.Operator)
             .ToList();
 
+            if (items.Count == 0
+    && PassWrite(param_table))
+                return 0;
+
             int nRet = writer.OutputRmlReport(
             items,
             null,
@@ -1392,11 +1461,12 @@ string strOutputFileName)
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+            return nRet + 1;
         }
 
         // 编目流水
         // parameters:
-        public static void BuildReport_421(LibraryContext context,
+        public static int BuildReport_421(LibraryContext context,
 Hashtable param_table,
 string strStartDate,
 string strEndDate,
@@ -1417,7 +1487,7 @@ string strOutputFileName)
                 .Where(b => b.Operation == "setBiblioInfo"
             && string.Compare(b.Date, strStartDate) >= 0
             && string.Compare(b.Date, strEndDate) <= 0)
-                .LeftJoin(
+                .LeftJoin1(
                 context.Users,
                 oper => oper.Operator,
                 user => user.ID,
@@ -1432,7 +1502,7 @@ string strOutputFileName)
                 }
                 )
                 .Where(x => libraryCode == "*" || x.UserLibraryCode.IndexOf(libraryCode) != -1)
-            .LeftJoin(
+            .LeftJoin1(
                 context.Biblios,
                 oper => oper.BiblioRecPath,
                 biblio => biblio.RecPath,
@@ -1448,6 +1518,10 @@ string strOutputFileName)
             .OrderBy(x => x.OperTime)
             .ToList();
 
+            if (items.Count == 0
+    && PassWrite(param_table))
+                return 0;
+
             int nRet = writer.OutputRmlReport(
             items,
             null,
@@ -1456,12 +1530,13 @@ string strOutputFileName)
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+            return nRet + 1;
         }
 
         // 订购工作量
         // parameters:
         //      operation   为 setEntity 或 setOrder 等
-        public static void BuildReport_412(LibraryContext context,
+        public static int BuildReport_412(LibraryContext context,
 Hashtable param_table,
 string strStartDate,
 string strEndDate,
@@ -1482,7 +1557,7 @@ string strOutputFileName)
                 .Where(b => b.Operation == operation
             && string.Compare(b.Date, strStartDate) >= 0
             && string.Compare(b.Date, strEndDate) <= 0)
-                .LeftJoin(
+                .LeftJoin1(
                 context.Users,
                 oper => oper.Operator,
                 user => user.ID,
@@ -1514,6 +1589,10 @@ string strOutputFileName)
             .OrderBy(x => x.Operator)
             .ToList();
 
+            if (items.Count == 0
+                && PassWrite(param_table))
+                return 0;
+
             int nRet = writer.OutputRmlReport(
             items,
             null,
@@ -1522,12 +1601,23 @@ string strOutputFileName)
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+            return nRet + 1;
+        }
+
+        // 是否不创建空内容的 .rml 文件?
+        // 如果 param_table 中没有 writeStyle=passEmpty 参数，默认要创建空内容的 .rml 文件
+        static bool PassWrite(Hashtable param_table)
+        {
+            var style = GetParam(param_table, "writeStyle");
+            if (StringUtil.IsInList("passEmpty", style))
+                return true;
+            return false;
         }
 
         // 订购流水
         // parameters:
         //      operation   为 setEntity 或 setOrder 等
-        public static void BuildReport_411(LibraryContext context,
+        public static int BuildReport_411(LibraryContext context,
 Hashtable param_table,
 string strStartDate,
 string strEndDate,
@@ -1571,7 +1661,7 @@ string strOutputFileName)
                 .Where(b => b.Operation == operation
             && string.Compare(b.Date, strStartDate) >= 0
             && string.Compare(b.Date, strEndDate) <= 0)
-                .LeftJoin(
+                .LeftJoin1(
                 context.Users,
                 oper => oper.Operator,
                 user => user.ID,
@@ -1587,7 +1677,7 @@ string strOutputFileName)
                 }
                 )
                 .Where(x => libraryCode == "*" || x.UserLibraryCode.IndexOf(libraryCode) != -1)
-            .LeftJoin(
+            .LeftJoin1(
                 context.Biblios,
                 oper => oper.BiblioRecPath,
                 biblio => biblio.RecPath,
@@ -1623,6 +1713,10 @@ string strOutputFileName)
                 ).ToList();
                 */
 
+            if (items.Count == 0
+                && PassWrite(param_table))
+                return 0;
+
             int nRet = writer.OutputRmlReport(
             items,
             null,
@@ -1631,11 +1725,13 @@ string strOutputFileName)
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+            return nRet + 1;
         }
 
         // 图书在架情况
         // 注：只有 strEndDate 有效。缺点是只能在 strEndDate 当天统计册记录中的 borrower 才准确
-        public static void BuildReport_302(LibraryContext context,
+        // 302.xml 中通过配置 <property fresh="true" />，令本报表只能是在每一次启动每日统计的当时新鲜时段内容才会统计，其它时段不会统计，这样保证了统计结果的准确性
+        public static int BuildReport_302(LibraryContext context,
 Hashtable param_table,
 string strStartDate,
 string strEndDate,
@@ -1643,8 +1739,13 @@ ReportWriter writer,
 Hashtable macro_table,
 string strOutputFileName)
         {
-            string location = param_table["location"] as string;
-            string classType = param_table["classType"] as string;
+            string location = GetParam(param_table, "location");
+            string classType = GetParam(param_table, "classType");
+
+            // 注: 如果 location 为 "/" 或者 "望湖小学/"，表示希望前方一致匹配数据字段内容
+            bool left_match = false;
+            if (location != null && location.EndsWith("/"))
+                left_match = true;
 
             macro_table["%location%"] = location;
             macro_table["%class%"] = classType;
@@ -1653,10 +1754,10 @@ string strOutputFileName)
             DateTime end_time = DateTimeUtil.Long8ToDateTime(strEndDate);
 
             var items = context.Items
-            .Where(b => b.Location == location
+            .Where(b => left_match ? b.Location.StartsWith(location) : b.Location == location
             // && b.CreateTime >= start_time
             && b.CreateTime <= end_time)
-            .LeftJoin(
+            .LeftJoin1(
                 context.Keys,
                 item => new { recpath = item.BiblioRecPath, type = classType, index = 0 },
                 key => new { recpath = key.BiblioRecPath, type = key.Type, index = key.Index },
@@ -1672,8 +1773,8 @@ string strOutputFileName)
                     Class = string.IsNullOrEmpty(key.Text) ? "" : key.Text.Substring(0, 1),
                 }
             )
-            .DefaultIfEmpty()
-            .Where(x => x.Location == location
+            // .DefaultIfEmpty()
+            .Where(x => left_match ? x.Location.StartsWith(location) : x.Location == location
             // && x.ClassType == classType
             )
             .AsEnumerable()
@@ -1718,6 +1819,10 @@ string strOutputFileName)
 
             Debug.Assert(sums.Count == 1);
 
+            if (items.Count == 0
+    && PassWrite(param_table))
+                return 0;
+
             int nRet = writer.OutputRmlReport(
             items,
             sums[0],
@@ -1726,10 +1831,11 @@ string strOutputFileName)
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+            return nRet + 1;
         }
 
-
-        public static void BuildReport_301(LibraryContext context,
+        // 图书种册, 按分类，馆藏地
+        public static int BuildReport_301(LibraryContext context,
     Hashtable param_table,
     string strStartDate,
     string strEndDate,
@@ -1740,6 +1846,17 @@ string strOutputFileName)
             string location = param_table["location"] as string;
             string classType = param_table["classType"] as string;
 
+            if (string.IsNullOrEmpty(location))
+                throw new ArgumentException("尚未指定 param_table 中的 location 参数");
+
+            if (string.IsNullOrEmpty(classType))
+                throw new ArgumentException("尚未指定 param_table 中的 classType 参数");
+
+            // 注: 如果 location 为 "/" 或者 "望湖小学/"，表示希望前方一致匹配数据字段内容
+            bool left_match = false;
+            if (location != null && location.EndsWith("/"))
+                left_match = true;
+
             macro_table["%location%"] = location;
             macro_table["%class%"] = classType;
 
@@ -1749,10 +1866,10 @@ string strOutputFileName)
             DateTime end_time = DateTimeUtil.Long8ToDateTime(strEndDate);
 
             var items = context.Items
-            .Where(b => b.Location == location
+            .Where(b => left_match ? b.Location.StartsWith(location) : b.Location == location
             // && b.CreateTime >= start_time
             && b.CreateTime <= end_time)
-            .LeftJoin(
+            .LeftJoin1(
                 context.Keys,
                 item => new { recpath = item.BiblioRecPath, type = classType, index = 0 },
                 key => new { recpath = key.BiblioRecPath, type = key.Type, index = key.Index },
@@ -1768,8 +1885,8 @@ string strOutputFileName)
                     Class = string.IsNullOrEmpty(key.Text) ? "" : key.Text.Substring(0, 1),
                 }
             )
-            .DefaultIfEmpty()
-            .Where(x => x.Location == location
+            // .DefaultIfEmpty()
+            .Where(x => left_match ? x.Location.StartsWith(location) : x.Location == location
             // && x.ClassType == classType
             )
             .AsEnumerable()
@@ -1786,6 +1903,10 @@ string strOutputFileName)
             .OrderBy(x => x.Class)
             .ToList();
 
+            if (items.Count == 0
+    && PassWrite(param_table))
+                return 0;
+
             int nRet = writer.OutputRmlReport(
             items,
             null,
@@ -1794,14 +1915,16 @@ string strOutputFileName)
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+            return nRet + 1;
         }
 
 
         // 某段时间内、某馆藏地内按照分类的借阅排行
+        // 表格行按照 BorrowCount 从大到小排列
         // parameters:
-        //      param_table 要求 location/dateRange/classType 参数。
+        //      param_table 要求 location/classType 参数。
         //                  location 表示一个馆藏地，例如 "/阅览室"。注意使用新版的正规形态，其中必须包含一个斜杠
-        public static void BuildReport_212(LibraryContext context,
+        public static int BuildReport_212(LibraryContext context,
             Hashtable param_table,
             string strStartDate,
             string strEndDate,
@@ -1809,8 +1932,14 @@ string strOutputFileName)
             Hashtable macro_table,
             string strOutputFileName)
         {
-            string location = param_table["location"] as string;
-            string classType = param_table["classType"] as string;
+            string location = GetParam(param_table, "location");
+
+            // 注: 如果 location 为 "/" 或者 "望湖小学/"，表示希望前方一致匹配数据字段内容
+            bool left_match = false;
+            if (location != null && location.EndsWith("/"))
+                left_match = true;
+
+            string classType = GetParam(param_table, "classType");
 
             macro_table["%location%"] = location;
             macro_table["%class%"] = classType;
@@ -1820,7 +1949,7 @@ string strOutputFileName)
             b.Action == "borrow" || b.Action == "return"
             && string.Compare(b.Date, strStartDate) >= 0
             && string.Compare(b.Date, strEndDate) <= 0)
-            .LeftJoin(
+            .LeftJoin1(
                 context.Items,
                 oper => oper.ItemBarcode,
                 item => item.ItemBarcode,
@@ -1833,20 +1962,25 @@ string strOutputFileName)
                     ReturnCount = oper.Action == "return" ? 1 : 0,
                     Class = context.Keys
                 .Where(x => x.BiblioRecPath == item.BiblioRecPath && x.Type == classType && x.Index == 0)
-                .Select(x => x.Text).FirstOrDefault()
+                .Select(x => string.IsNullOrEmpty(x.Text) ? "" : x.Text.Substring(0, 1)).FirstOrDefault()
                 }
             )
-            .DefaultIfEmpty()
-            .Where(x => x.Location == location)
+            // .DefaultIfEmpty()
+            .Where(x => left_match ? x.Location.StartsWith(location) : x.Location == location)
             .GroupBy(x => x.Class)
             .Select(g => new
             {
-                Class = string.IsNullOrEmpty(g.Key) ? "" : g.Key.Substring(0, 1),
+                Class = g.Key,  // string.IsNullOrEmpty(g.Key) ? "" : g.Key.Substring(0, 1),
                 BorrowCount = g.Sum(x => x.BorrowCount),
                 ReturnCount = g.Sum(x => x.ReturnCount)
             })
             .OrderByDescending(x => x.BorrowCount).ThenBy(x => x.Class)
+            // .OrderBy(x => x.Class)
             .ToList();
+
+            if (items.Count == 0
+    && PassWrite(param_table))
+                return 0;
 
             int nRet = writer.OutputRmlReport(
             items,
@@ -1856,13 +1990,72 @@ string strOutputFileName)
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+            return nRet + 1;
+        }
+
+        public class Item202
+        {
+            public string? BiblioRecPath { get; set; }
+            public string? Summary { get; set; }
+            public int ItemCount { get; set; }
+
         }
 
 
         // 某段时间内没有被借出过的图书。这里有个疑问，就是这一段时间以前借了但在这一段时间内来不及还的算不算借过？
         // parameters:
+        //      param_table 要求 location 参数。表示一个馆藏地，例如 "/阅览室"。注意使用新版的正规形态，其中必须包含一个斜杠
+        public static IList<Item202> Query_202(LibraryContext context,
+Hashtable param_table,
+string strStartDate,
+string strEndDate,
+Hashtable macro_table)
+        {
+            string location = param_table["location"] as string;
+
+            if (string.IsNullOrEmpty(location))
+                throw new ArgumentException("尚未指定 param_table 中的 location 参数");
+
+            var items = context.CircuOpers
+            .Where(b => // (b.LibraryCode == librarycode) &&
+            b.Action == "borrow"
+            && string.Compare(b.Date, strStartDate) >= 0
+            && string.Compare(b.Date, strEndDate) <= 0)
+            .LeftJoin1(
+                context.Items,
+                oper => oper.ItemBarcode,
+                item => item.ItemBarcode,
+                (oper, item) => new
+                {
+                    item.ItemBarcode,
+                    Location = item.Location,
+                }
+            )
+            // .DefaultIfEmpty()
+            .Where(x => location == "*" || x.Location == location)
+            .Select(x => x.ItemBarcode);    // .ToList();
+
+            var results = context.Items
+    .Where(x => x.Location == location && !items.Contains(x.ItemBarcode))
+    .GroupBy(x => x.BiblioRecPath)
+    .Select(g => new Item202
+    {
+        BiblioRecPath = g.Key,
+        ItemCount = g.Count(),
+        Summary = context.Biblios.Where(o => o.RecPath == g.Key).Select(o => o.Summary).FirstOrDefault()
+    })
+.OrderBy(t => t.BiblioRecPath)
+.ToList();
+
+            macro_table["%location%"] = GetLocationCaption(location);
+            return results;
+        }
+
+        // 某段时间内没有被借出过的图书。这里有个疑问，就是这一段时间以前借了(处于在借状态)但在这一段时间内来不及还的算不算借过？
+        // 目前某段时间内处于在借状态的图书，在本报表中处于“未被借阅”范围，这是不太合理的
+        // parameters:
         //      param_table 要求 location/dataRange 参数。表示一个馆藏地，例如 "/阅览室"。注意使用新版的正规形态，其中必须包含一个斜杠
-        public static void BuildReport_202(LibraryContext context,
+        public static int BuildReport_202(LibraryContext context,
             Hashtable param_table,
             string strStartDate,
             string strEndDate,
@@ -1873,6 +2066,14 @@ string strOutputFileName)
             string location = param_table["location"] as string;
             // string librarycode = GetLibraryCode(location);
 
+            if (string.IsNullOrEmpty(location))
+                throw new ArgumentException("尚未指定 param_table 中的 location 参数");
+
+            // 注: 如果 location 为 "/" 或者 "望湖小学/"，表示希望前方一致匹配数据字段内容
+            bool left_match = false;
+            if (location != null && location.EndsWith("/"))
+                left_match = true;
+
             macro_table["%location%"] = location;
 
             var items = context.CircuOpers
@@ -1880,7 +2081,7 @@ string strOutputFileName)
             b.Action == "borrow"
             && string.Compare(b.Date, strStartDate) >= 0
             && string.Compare(b.Date, strEndDate) <= 0)
-            .LeftJoin(
+            .LeftJoin1(
                 context.Items,
                 oper => oper.ItemBarcode,
                 item => item.ItemBarcode,
@@ -1890,8 +2091,8 @@ string strOutputFileName)
                     Location = item.Location,
                 }
             )
-            .DefaultIfEmpty()
-            .Where(x => x.Location == location)
+            // .DefaultIfEmpty()
+            .Where(x => left_match ? x.Location.StartsWith(location) : x.Location == location)
             .Select(x => x.ItemBarcode).ToList();
 
             /*
@@ -1923,14 +2124,14 @@ string strOutputFileName)
             */
 
             var results = context.Items
-    .Where(x => x.Location == location && !items.Contains(x.ItemBarcode))
+    .Where(x => (left_match ? x.Location.StartsWith(location) : x.Location == location) && !items.Contains(x.ItemBarcode))
     .GroupBy(x => x.BiblioRecPath)
     .Select(g => new
     {
         BiblioRecPath = g.Key,
         ItemCount = g.Count(),
     })
-    .LeftJoin(context.Biblios,
+    .LeftJoin1(context.Biblios,
 item => item.BiblioRecPath,
 biblio => biblio.RecPath,
 (item, biblio) => new
@@ -1942,6 +2143,11 @@ biblio => biblio.RecPath,
 .OrderBy(t => t.BiblioRecPath)
 .ToList();
 
+            macro_table["%location%"] = GetLocationCaption(location);
+
+            if (results.Count == 0
+    && PassWrite(param_table))
+                return 0;
 
             int nRet = writer.OutputRmlReport(
             results,
@@ -1951,22 +2157,86 @@ biblio => biblio.RecPath,
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+            return nRet + 1;
+        }
+
+        public class Item201
+        {
+            public string? RecPath { get; set; }
+            public string? Summary { get; set; }
+            public int BorrowCount { get; set; }
+            public int ReturnCount { get; set; }
         }
 
         // 按图书种的借阅排行榜
         // parameters:
         //      param_table 要求 location 参数。表示一个馆藏地，例如 "/阅览室"。注意使用新版的正规形态，其中必须包含一个斜杠
-        public static void BuildReport_201(LibraryContext context,
-            Hashtable param_table,
-            string strStartDate,
-            string strEndDate,
-            ReportWriter writer,
-            Hashtable macro_table,
-            string strOutputFileName)
+        public static IList<Item201> Query_201(LibraryContext context,
+        Hashtable param_table,
+        string strStartDate,
+        string strEndDate,
+        // ReportWriter writer,
+        Hashtable macro_table)
         {
             string location = param_table["location"] as string;
             // string librarycode = GetLibraryCode(location);
 
+            if (string.IsNullOrEmpty(location))
+                throw new ArgumentException("尚未指定 param_table 中的 location 参数");
+
+            // 注: 如果 location 为 "/" 或者 "望湖小学/"，表示希望前方一致匹配数据字段内容
+            bool left_match = false;
+            if (location != null && location.EndsWith("/"))
+                left_match = true;
+
+
+#if REMOVED
+            // 第一步，获得册统计结果
+            var items = from oper in context.CircuOpers
+                        where (
+            (oper.Action == "borrow" || oper.Action == "return")
+            && string.Compare(oper.Date, strStartDate) >= 0
+            && string.Compare(oper.Date, strEndDate) <= 0)
+                        join item in context.Items
+                        on oper.ItemBarcode equals item.ItemBarcode
+                        into re
+                        from r in re.DefaultIfEmpty(null)
+                        where r.Location == location
+                        select new
+                        {
+                            Location = r.Location,
+                            BiblioRecPath = r.BiblioRecPath,
+                            BorrowCount = oper.Action == "borrow" ? 1 : 0,
+                            ReturnCount = oper.Action == "return" ? 1 : 0
+                        };
+
+            // 第二步，获得书目统计结果
+            var biblios = from item in items
+                          group item by item.BiblioRecPath
+                          into g
+                          select new
+                          {
+                              BiblioRecPath = g.Key,
+                              BorrowCount = g.Sum(t => t.BorrowCount),
+                              ReturnCount = g.Sum(t => t.ReturnCount)
+                          };
+
+            var opers = (from item in biblios
+                         join biblio in context.Biblios
+                         on item.BiblioRecPath equals biblio.RecPath
+                         into re
+                         from r in re.DefaultIfEmpty()
+                         select new Item201
+                         {
+                             RecPath = item.BiblioRecPath,
+                             Summary = r.Summary,
+                             BorrowCount = item.BorrowCount,
+                             ReturnCount = item.ReturnCount
+                         })
+                         .ToList();
+#endif
+
+#if REMOVED
             var opers = context.CircuOpers
             .Where(b => // (b.LibraryCode == librarycode) &&
             (b.Action == "borrow" || b.Action == "return")
@@ -1993,7 +2263,114 @@ biblio => biblio.RecPath,
                 BorrowCount = g.Sum(t => t.BorrowCount),
                 ReturnCount = g.Sum(t => t.ReturnCount)
             })
+            // .DefaultIfEmpty()
+            .LeftJoin(context.Biblios,
+            item => item.BiblioRecPath,
+            biblio => biblio.RecPath,
+            (item, biblio) => new
+            Item201
+            {
+                RecPath = item.BiblioRecPath,
+                Summary = biblio.Summary,
+                BorrowCount = item.BorrowCount,
+                ReturnCount = item.ReturnCount
+            })
+            .OrderByDescending(t => t.BorrowCount).ThenBy(t => t.RecPath)
+            .ToList();
+#endif
+
+            var opers = context.CircuOpers
+                .Where(b => // (b.LibraryCode == librarycode) &&
+(b.Action == "borrow" || b.Action == "return")
+&& string.Compare(b.Date, strStartDate) >= 0
+&& string.Compare(b.Date, strEndDate) <= 0)
+                .LeftJoin1(
+    context.Items,
+    oper => oper.ItemBarcode,
+    item => item.ItemBarcode,
+    /*
+    oper => new
+    {
+        Location = (string ?)null,
+        BiblioRecPath = (string ?)null,
+        BorrowCount = oper.Action == "borrow" ? 1 : 0,
+        ReturnCount = oper.Action == "return" ? 1 : 0
+    },
+    */
+    (oper, item) => new
+    {
+        Location = item.Location,
+        BiblioRecPath = item.BiblioRecPath,
+        BorrowCount = oper.Action == "borrow" ? 1 : 0,
+        ReturnCount = oper.Action == "return" ? 1 : 0
+    }
+)
+.Where(x => left_match ? x.Location.StartsWith(location) : x.Location == location)
+.GroupBy(x => x.BiblioRecPath)
+.Select(g => new Item201
+{
+    RecPath = g.Key,
+    BorrowCount = g.Sum(t => t.BorrowCount),
+    ReturnCount = g.Sum(t => t.ReturnCount),
+    Summary = context.Biblios.Where(o => o.RecPath == g.Key).Select(o => o.Summary).FirstOrDefault()
+})
+// .DefaultIfEmpty()
+.OrderByDescending(t => t.BorrowCount).ThenBy(t => t.RecPath)
+.ToList();
+
+            /*
+            if (opers == null
+                || opers.Count == 0)
+                return 0;
+            */
+
+            macro_table["%location%"] = GetLocationCaption(location);
+            return opers;
+        }
+
+
+        // 按图书种的借阅排行榜
+        // parameters:
+        //      param_table 要求 location 参数。表示一个馆藏地，例如 "/阅览室"。注意使用新版的正规形态，其中必须包含一个斜杠
+        public static int BuildReport_201(LibraryContext context,
+            Hashtable param_table,
+            string strStartDate,
+            string strEndDate,
+            ReportWriter writer,
+            Hashtable macro_table,
+            string strOutputFileName)
+        {
+            string location = param_table["location"] as string;
+            // string librarycode = GetLibraryCode(location);
+
+#if REMOVED
+            var opers = context.CircuOpers
+            .Where(b => // (b.LibraryCode == librarycode) &&
+            (b.Action == "borrow" || b.Action == "return")
+            && string.Compare(b.Date, strStartDate) >= 0
+            && string.Compare(b.Date, strEndDate) <= 0)
+            .LeftJoin(
+                context.Items,
+                oper => oper.ItemBarcode,
+                item => item.ItemBarcode,
+                (oper, item) => new
+                {
+                    Location = item.Location,
+                    BiblioRecPath = item.BiblioRecPath,
+                    BorrowCount = oper.Action == "borrow" ? 1 : 0,
+                    ReturnCount = oper.Action == "return" ? 1 : 0
+                }
+            )
             .DefaultIfEmpty()
+            .Where(x => x.Location == location)
+            .GroupBy(x => x.BiblioRecPath)
+            .Select(g => new
+            {
+                BiblioRecPath = g.Key,
+                BorrowCount = g.Sum(t => t.BorrowCount),
+                ReturnCount = g.Sum(t => t.ReturnCount)
+            })
+            // .DefaultIfEmpty()
             .LeftJoin(context.Biblios,
             item => item.BiblioRecPath,
             biblio => biblio.RecPath,
@@ -2007,6 +2384,25 @@ biblio => biblio.RecPath,
             .OrderByDescending(t => t.BorrowCount).ThenBy(t => t.RecPath)
             .ToList();
 
+            /*
+            if (opers == null
+                || opers.Count == 0)
+                return 0;
+            */
+
+            macro_table["%location%"] = GetLocationCaption(location);
+#endif
+
+            var opers = Query_201(context,
+        param_table,
+        strStartDate,
+            strEndDate,
+        macro_table);
+
+            if (opers.Count == 0
+    && PassWrite(param_table))
+                return 0;
+
             int nRet = writer.OutputRmlReport(
             opers,
             null,
@@ -2015,13 +2411,26 @@ biblio => biblio.RecPath,
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+            return nRet + 1;
+        }
+
+        // 获得适合用作报表名或文件名 的 地点名称字符串
+        public static string GetLocationCaption(string strText)
+        {
+            if (string.IsNullOrEmpty(strText) == true)
+                return "[空]";
+
+            if (strText[strText.Length - 1] == '/')
+                return strText.Substring(0, strText.Length - 1) + "[全部]";
+
+            return strText;
         }
 
         // 超期的读者和图书清单
         // parameters:
         //      param_table 要求 libraryCode/endDate 参数
         //                  endDate 统计日期，也就是计算超期的日期，如果为空表示今天
-        public static void BuildReport_141(LibraryContext context,
+        public static int BuildReport_141(LibraryContext context,
 Hashtable param_table,
 string strStartDate,
 string strEndDate,
@@ -2057,7 +2466,7 @@ string strOutputFileName)
                 .Where(x => (strLibraryCode == "*" || x.Location.StartsWith(strLibraryCode))
                 && string.IsNullOrEmpty(x.Borrower) == false
                 && x.ReturningTime < end)
-                .LeftJoin(context.Patrons,
+                .LeftJoin1(context.Patrons,
                 item => item.Borrower,
                 patron => patron.Barcode,
                 (item, patron) => new
@@ -2077,6 +2486,10 @@ string strOutputFileName)
             .OrderBy(t => t.BorrowTime)
             .ToList();
 
+            if (items.Count == 0
+    && PassWrite(param_table))
+                return 0;
+
             int nRet = writer.OutputRmlReport(
             items,
             null,
@@ -2085,13 +2498,14 @@ string strOutputFileName)
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+            return nRet + 1;
         }
 
 #if NO
         // 超期的读者和图书清单
         // parameters:
         //      parameters  附加的参数。统计日期，也就是计算超期的日期，如果为空表示今天
-        public static void BuildReport_141(LibraryContext context,
+        public static int BuildReport_141(LibraryContext context,
 string strLibraryCode,
 string strStartDate,
 string strEndDate,
@@ -2169,7 +2583,7 @@ string strOutputFileName)
         // parameters:
         //      param_table 要求 patronBarcode 参数
         //                  patronBarcode 读者证条码号
-        public static void BuildReport_131(LibraryContext context,
+        public static int BuildReport_131(LibraryContext context,
 Hashtable param_table,
 string strStartDate,
 string strEndDate,
@@ -2179,6 +2593,9 @@ string strOutputFileName)
         {
             string patronBarcode = param_table["patronBarcode"] as string;
 
+            if (string.IsNullOrEmpty(patronBarcode))
+                throw new ArgumentException("尚未指定 param_table 中的 patronBarcode 参数");
+
             macro_table["%readerbarcode%"] = patronBarcode;
 
             var opers = context.CircuOpers
@@ -2186,7 +2603,7 @@ string strOutputFileName)
             && b.Action == "borrow"
             && string.Compare(b.Date, strStartDate) >= 0
             && string.Compare(b.Date, strEndDate) <= 0)
-            .LeftJoin(
+            .LeftJoin1(
                 context.Items,
                 oper => oper.ItemBarcode,
                 item => item.ItemBarcode,
@@ -2196,20 +2613,54 @@ string strOutputFileName)
                     BorrowTime = oper.OperTime,
                     ReturnTime = context
                     .CircuOpers.Where(x => x.ReaderBarcode == patronBarcode && x.Action == "return" && x.OperTime >= oper.OperTime && string.Compare(x.Date, oper.Date) >= 0)
-                    .Select(a => new { a.OperTime })
-                    // .OrderBy(a => a.OperTime)
-                    .FirstOrDefault().OperTime,
+                    .Select(a => a.OperTime)
+                    .OrderBy(a => a)
+                    .FirstOrDefault(),
                     Summary = context
                     .Biblios.Where(x => item != null && x.RecPath == item.BiblioRecPath)
                     .Select(a => a.Summary)
                     .FirstOrDefault()
                 }
             )
-            .DefaultIfEmpty()
+            // .DefaultIfEmpty()
             .OrderBy(t => t.BorrowTime)
             //.Take(1000)
             .ToList();
 
+#if REMOVED
+            var temp = context.CircuOpers
+.Where(b => (b.ReaderBarcode == patronBarcode)
+&& b.Action == "borrow"
+&& string.Compare(b.Date, strStartDate) >= 0
+&& string.Compare(b.Date, strEndDate) <= 0)
+.LeftJoin(
+    context.Items,
+    oper => oper.ItemBarcode,
+    item => item.ItemBarcode,
+    (oper, item) => new
+    {
+        ItemBarcode = item == null ? "" : item.ItemBarcode,
+        BorrowTime = oper.OperTime,
+        ReturnTime = context
+        .CircuOpers.Where(x => x.ReaderBarcode == patronBarcode && x.Action == "return" && x.OperTime >= oper.OperTime && string.Compare(x.Date, oper.Date) >= 0)
+        .Select(a => a.OperTime)
+        // .OrderBy(a => a.OperTime)
+        .FirstOrDefault(),
+        Summary = context
+        .Biblios.Where(x => item != null && x.RecPath == item.BiblioRecPath)
+        .Select(a => a.Summary)
+        .FirstOrDefault()
+    }
+);
+            List<object> opers = new List<object>();
+            foreach(var o in temp.DefaultIfEmpty())
+            {
+                opers.Add(o);
+            }
+#endif
+
+            if (opers == null || opers.Count == 0)
+                return 0;
 
             /*
             .LeftJoin(
@@ -2237,12 +2688,20 @@ string strOutputFileName)
             .ToList();
             */
 
-            // %name% %readerbarcode% %department%
-            var patrons = context.Patrons.Where(x => x.Barcode == patronBarcode)
-                .Select(x => new { x.Name, x.Department })
-                .ToList();
-            macro_table["%name%"] = patrons.Count == 0 ? "" : patrons[0].Name;
-            macro_table["%department%"] = patrons.Count == 0 ? "" : patrons[0].Department;
+            if (macro_table.Contains("%name%") == false
+                || macro_table.Contains("%department%") == false)
+            {
+                // %name% %readerbarcode% %department%
+                var patron = context.Patrons.Where(x => x.Barcode == patronBarcode)
+                    .Select(x => new { x.Name, x.Department })
+                    .FirstOrDefault();
+                macro_table["%name%"] = patron == null ? "" : patron.Name;
+                macro_table["%department%"] = patron == null ? "" : patron.Department;
+            }
+
+            if (opers.Count == 0
+    && PassWrite(param_table))
+                return 0;
 
             int nRet = writer.OutputRmlReport(
             opers,
@@ -2252,13 +2711,14 @@ string strOutputFileName)
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+            return nRet + 1;
         }
 
 
         // 读者姓名的借阅排行
         // parameters:
         //      param_table 要求 libraryCode 参数
-        public static void BuildReport_121(LibraryContext context,
+        public static int BuildReport_121(LibraryContext context,
     Hashtable param_table,
     string strStartDate,
     string strEndDate,
@@ -2275,7 +2735,7 @@ string strOutputFileName)
             .Where(b => (strLibraryCode == "*" || b.LibraryCode.Contains(strLibraryCode))
             && string.Compare(b.Date, strStartDate) >= 0
             && string.Compare(b.Date, strEndDate) <= 0)
-            .LeftJoin(
+            .LeftJoin1(
                 context.Patrons,
                 oper => oper.ReaderBarcode,
                 patron => patron.Barcode,
@@ -2288,7 +2748,7 @@ string strOutputFileName)
                     ReturnCount = oper.Action == "return" ? 1 : 0
                 }
             )
-            .DefaultIfEmpty()
+            // .DefaultIfEmpty()
             .GroupBy(x => new { x.PatronBarcode, x.Name, x.Department },
             (key, items) => new
             {
@@ -2302,6 +2762,10 @@ string strOutputFileName)
             .OrderByDescending(t => t.BorrowCount).ThenBy(t => t.Name)
             .ToList();
 
+            if (opers.Count == 0
+    && PassWrite(param_table))
+                return 0;
+
             int nRet = writer.OutputRmlReport(
             opers,
             null,
@@ -2310,12 +2774,13 @@ string strOutputFileName)
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+            return nRet + 1;
         }
 
         // 读者类型的借阅排行
         // parameters:
         //      param_table 要求 libraryCode 参数
-        public static void BuildReport_111(LibraryContext context,
+        public static int BuildReport_111(LibraryContext context,
     Hashtable param_table,
     string strStartDate,
     string strEndDate,
@@ -2331,7 +2796,7 @@ string strOutputFileName)
             .Where(b => (strLibraryCode == "*" || b.LibraryCode.Contains(strLibraryCode))
             && string.Compare(b.Date, strStartDate) >= 0
             && string.Compare(b.Date, strEndDate) <= 0)
-            .LeftJoin(
+            .LeftJoin1(
                 context.Patrons,
                 oper => oper.ReaderBarcode,
                 patron => patron.Barcode,
@@ -2342,7 +2807,7 @@ string strOutputFileName)
                     ReturnCount = oper.Action == "return" ? 1 : 0
                 }
             )
-            .DefaultIfEmpty()
+            // .DefaultIfEmpty()
             .GroupBy(x => x.ReaderType)
             .Select(g => new
             {
@@ -2350,9 +2815,13 @@ string strOutputFileName)
                 BorrowCount = g.Sum(t => t.BorrowCount),
                 ReturnCount = g.Sum(t => t.ReturnCount)
             })
-            .DefaultIfEmpty()
+            // .DefaultIfEmpty()
             .OrderByDescending(t => t.BorrowCount).ThenBy(t => t.PatronType)
             .ToList();
+
+            if (opers.Count == 0
+    && PassWrite(param_table))
+                return 0;
 
             int nRet = writer.OutputRmlReport(
             opers,
@@ -2362,6 +2831,7 @@ string strOutputFileName)
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+            return nRet + 1;
         }
 
         static string GetMatchLibraryCode(string libraryCode)
@@ -2378,10 +2848,94 @@ string strOutputFileName)
             return (query == "*" || instance.IndexOf(query) != -1);
         }
 
+        // 按选定部门的图书借阅排行榜
+        // parameters:
+        //      param_table 要求 libraryCode 参数
+        //                  要求 departments 参数，内容为逗号间隔的部门名字列表
+        public static int BuildReport_102(LibraryContext context,
+            Hashtable param_table,
+            string strStartDate,
+            string strEndDate,
+            ReportWriter writer,
+            Hashtable macro_table,
+            string strOutputFileName)
+        {
+            string strLibraryCode = param_table["libraryCode"] as string;
+            string? departments = param_table["departments"] as string;
+
+            if (string.IsNullOrEmpty(departments))
+                throw new ArgumentException($"param_table 中应当包含 departments 参数");
+
+            var department_list = departments.Split(",");
+
+            /*
+            var test = context.CircuOpers
+.Where(b => (strLibraryCode == "*" || b.LibraryCode == strLibraryCode)
+&& string.Compare(b.Date, strStartDate) >= 0
+&& string.Compare(b.Date, strEndDate) <= 0).ToList();
+            */
+            strLibraryCode = GetMatchLibraryCode(strLibraryCode);
+
+            var opers = context.CircuOpers
+            .Where(b => (strLibraryCode == "*" || b.LibraryCode.Contains(strLibraryCode))
+            && string.Compare(b.Date, strStartDate) >= 0
+            && string.Compare(b.Date, strEndDate) <= 0)
+            .LeftJoin1(
+                context.Patrons,
+                oper => oper.ReaderBarcode,
+                patron => patron.Barcode,
+                (oper, patron) => new
+                {
+                    Department = patron == null ? "" : (department_list.Contains(patron.Department) ? patron.Department : null),
+                    BorrowCount = oper.Action == "borrow" ? 1 : 0,
+                    ReturnCount = oper.Action == "return" ? 1 : 0,
+                    ReadCount = oper.Action == "read" ? 1 : 0,
+                }
+            )
+            // .DefaultIfEmpty()
+            .GroupBy(x => x.Department)
+            .Select(g => new
+            {
+                Department = g.Key,
+                BorrowCount = g.Sum(t => t.BorrowCount),
+                ReturnCount = g.Sum(t => t.ReturnCount),
+                ReadCount = g.Sum(t => t.ReadCount),
+            })
+            .OrderByDescending(t => t.BorrowCount).ThenBy(t => t.Department)
+            .ToList();
+
+            if (opers.Count == 0
+    && PassWrite(param_table))
+                return 0;
+
+            // return:
+            //      -1  出错
+            //      其它  返回实际处理的表格内容行数(注意，不包括标题行、合计行等)
+            int nRet = writer.OutputRmlReport(
+            opers,
+            null,
+            macro_table,
+            strOutputFileName,
+            out string strError);
+            if (nRet == -1)
+                throw new Exception(strError);
+
+            return nRet + 1;
+        }
+
+        // 获得一个分馆内读者记录的所有单位名称(类型)
+        public static IEnumerable<string?> GetAllReaderDepartments(
+            LibraryContext context,
+            string strLibraryCode)
+        {
+            return context.Patrons.Where(o => o.LibraryCode == strLibraryCode)
+                .Select(o => o.Department).Distinct();
+        }
+
         // 按部门的图书借阅排行榜
         // parameters:
         //      param_table 要求 libraryCode 参数
-        public static void BuildReport_101(LibraryContext context,
+        public static int BuildReport_101(LibraryContext context,
             Hashtable param_table,
             string strStartDate,
             string strEndDate,
@@ -2403,7 +2957,7 @@ string strOutputFileName)
             .Where(b => (strLibraryCode == "*" || b.LibraryCode.Contains(strLibraryCode))
             && string.Compare(b.Date, strStartDate) >= 0
             && string.Compare(b.Date, strEndDate) <= 0)
-            .LeftJoin(
+            .LeftJoin1(
                 context.Patrons,
                 oper => oper.ReaderBarcode,
                 patron => patron.Barcode,
@@ -2415,7 +2969,7 @@ string strOutputFileName)
                     ReadCount = oper.Action == "read" ? 1 : 0,
                 }
             )
-            .DefaultIfEmpty()
+            // .DefaultIfEmpty()
             .GroupBy(x => x.Department)
             .Select(g => new
             {
@@ -2427,6 +2981,13 @@ string strOutputFileName)
             .OrderByDescending(t => t.BorrowCount).ThenBy(t => t.Department)
             .ToList();
 
+            if (opers.Count == 0
+    && PassWrite(param_table))
+                return 0;   // 注: 表示没有创建 .rml 文件
+
+            // return:
+            //      -1  出错
+            //      其它  返回实际处理的表格内容行数(注意，不包括标题行、合计行等)
             int nRet = writer.OutputRmlReport(
             opers,
             null,
@@ -2435,6 +2996,8 @@ string strOutputFileName)
             out string strError);
             if (nRet == -1)
                 throw new Exception(strError);
+
+            return nRet + 1;    // 注: 最小是 1，表示创建了一个内容为空的 .rml 文件
         }
 
         // 测试创建按部门的图书借阅排行榜
@@ -2465,7 +3028,7 @@ string strOutputFileName)
             .Where(b => (strLibraryCode == "*" || b.LibraryCode.Contains(strLibraryCode))
             && string.Compare(b.Date, strStartDate) >= 0
             && string.Compare(b.Date, strEndDate) <= 0)
-            .LeftJoin(
+            .LeftJoin1(
                 context.Patrons,
                 oper => oper.ReaderBarcode,
                 patron => patron.Barcode,
@@ -3014,4 +3577,5 @@ The default behavior of an XmlWriter created using Create is to throw an Argumen
 
         #endregion
     }
+
 }

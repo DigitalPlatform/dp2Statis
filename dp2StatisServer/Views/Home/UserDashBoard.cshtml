@@ -1,6 +1,7 @@
-﻿@{
+﻿@using dp2StatisServer.Controllers;
+@{
     ViewBag.Title = "用户信息";
-    string? userName = Context.Session.GetString("UserName");
+    string? userName = Context.GetUserName();
 }
 
 <fieldset>
