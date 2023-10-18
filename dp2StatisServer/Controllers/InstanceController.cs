@@ -749,7 +749,7 @@ namespace dp2StatisServer.Controllers
             }
 
             // 通过 libraryCode 和 reportName 找到 ReportDef 定义对象
-            var def = instance.GetDailyReportDefDom().GetReportDefs(libraryCode)?.Where(o=>o.Type == reportType).FirstOrDefault();
+            var def = instance.GetDailyReportDefDom().GetReportDefs(libraryCode)?.Where(o => o.Type == reportType).FirstOrDefault();
             if (def == null)
             {
                 model.ErrorInfo = $"馆代码为 '{libraryCode}' 报表类型为 '{reportType}' 的报表定义没有找到";
@@ -849,15 +849,29 @@ namespace dp2StatisServer.Controllers
                         return View("Report", model);
                     }
 
-                    var ret = CreateReport(instance, model);
-                    if (ret.Value == -1)
+                    CreateReportResult? ret = null;
+                    try
                     {
-                        model.ErrorInfo = $"CreateReport() 出错: {ret.ErrorInfo}";
-                        return View("Report", model);
-                    }
+                        ret = CreateReport(instance, model);
+                        if (ret.Value == -1)
+                        {
+                            model.ErrorInfo = $"CreateReport() 出错: {ret.ErrorInfo}";
+                            return View("Report", model);
+                        }
 
-                    model.HtmlContent = System.IO.File.ReadAllText(ret.strOutputHtmlFileName);
-                    model.SuccessInfo = $"为实例 {name} 创建报表成功";
+                        model.HtmlContent = System.IO.File.ReadAllText(ret.strOutputHtmlFileName);
+                        model.SuccessInfo = $"为实例 {name} 创建报表成功";
+                    }
+                    finally
+                    {
+                        if (ret != null)
+                        {
+                            if (string.IsNullOrEmpty(ret.strOutputHtmlFileName) == false)
+                                System.IO.File.Delete(ret.strOutputHtmlFileName);
+                            if (string.IsNullOrEmpty(ret.strOutputFileName) == false)
+                                System.IO.File.Delete(ret.strOutputFileName);
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -896,7 +910,7 @@ namespace dp2StatisServer.Controllers
             string strOutputHtmlFileName = Path.Combine(instance.DataDir, "~" + Guid.NewGuid().ToString() + ".html");
 
             // Hashtable param_table = new Hashtable();
-            var param_table = StringUtil.ParseParameters(model.OtherParameters?.Replace("\r\n","\r").Replace("\n","\r"), '\r', ':');
+            var param_table = StringUtil.ParseParameters(model.OtherParameters?.Replace("\r\n", "\r").Replace("\n", "\r"), '\r', ':');
             // libraryCode sortColumn dateRange
             param_table["libraryCode"] = model.LibraryCode;
             param_table["dateRange"] = model.DateRange;

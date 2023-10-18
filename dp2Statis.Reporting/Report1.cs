@@ -302,10 +302,15 @@ strOutputFileName);
 
         // 获得一个参数值。带有检查参数是否具备的功能
         public static string GetParam(Hashtable param_table,
-            string name)
+            string name,
+            bool throwException = true)
         {
             if (param_table.ContainsKey(name) == false)
-                throw new ArgumentException($"尚未指定 param_table 中的 {name} 参数");
+            {
+                if (throwException)
+                    throw new ArgumentException($"尚未指定 param_table 中的 {name} 参数");
+                return "";
+            }
 
 #pragma warning disable CS8603 // 可能返回 null 引用。
             return param_table[name] as string;
@@ -327,14 +332,16 @@ string strOutputFileName)
             // string classType = param_table["classType"] as string;
 
             // 注: libraryCode 要求是一个馆代码，或者 *
-            string libraryCode = param_table["libraryCode"] as string;
+            string libraryCode = GetParam(param_table, "libraryCode");
+            
+            macro_table["%library%"] = libraryCode;
+            macro_table["%class%"] = classType;
+
             string libraryCode0 = libraryCode;
             //if (libraryCode != "*")
             //    libraryCode = "," + libraryCode + ",";
             libraryCode = GetMatchLibraryCode(libraryCode);
 
-            macro_table["%library%"] = libraryCode;
-            macro_table["%class%"] = classType;
 
 #if NO
             var items = context.GetResOpers
@@ -434,7 +441,7 @@ string strOutputFileName)
                     {
                         Class = string.IsNullOrEmpty(key.Text) ? "" : key.Text.Substring(0, 1),
                         GetCount = 1,
-                        GetSize = Convert.ToInt64(j2.oper.Size),
+                        GetSize = string.IsNullOrEmpty(j2.oper.Size) ? 0 : Convert.ToInt64(j2.oper.Size),
                     }
                 )
                 .GroupBy(x => x.Class)
@@ -473,13 +480,14 @@ Hashtable macro_table,
 string strOutputFileName)
         {
             // 注: libraryCode 要求是一个馆代码，或者 *
-            string libraryCode = param_table["libraryCode"] as string;
+            string libraryCode = GetParam(param_table, "libraryCode");
+
+            macro_table["%library%"] = libraryCode;
+            
             string libraryCode0 = libraryCode;
             //if (libraryCode != "*")
             //    libraryCode = "," + libraryCode + ",";
             libraryCode = GetMatchLibraryCode(libraryCode);
-
-            macro_table["%library%"] = libraryCode;
 
             var items = context.GetResOpers
                 .Where(b => b.Operation == "getRes"
@@ -497,7 +505,7 @@ string strOutputFileName)
                     oper.Operator,
                     // oper.Action,
                     // oper.XmlRecPath,
-                    oper.Size,
+                    Size = oper.Size,
                 }
                 )
                 .LeftJoin1(
@@ -513,7 +521,7 @@ string strOutputFileName)
                     // oper.Size,
                     // oper.XmlRecPath,
                     GetCount = 1,
-                    GetSize = Convert.ToInt64(oper.Size),
+                    GetSize = string.IsNullOrEmpty(oper.Size) ? 0 : Convert.ToInt64(oper.Size),
                     TotalCount = 1,
                 }
                 )
@@ -570,13 +578,14 @@ Hashtable macro_table,
 string strOutputFileName)
         {
             // 注: libraryCode 要求是一个馆代码，或者 *
-            string libraryCode = param_table["libraryCode"] as string;
+            string libraryCode = GetParam(param_table, "libraryCode");
+
+            macro_table["%library%"] = libraryCode;
+            
             string libraryCode0 = libraryCode;
             //if (libraryCode != "*")
             //    libraryCode = "," + libraryCode + ",";
             libraryCode = GetMatchLibraryCode(libraryCode);
-
-            macro_table["%library%"] = libraryCode;
 
             var items = context.GetResOpers
                 .Where(b => b.Operation == "getRes"
@@ -661,12 +670,13 @@ Hashtable macro_table,
 string strOutputFileName)
         {
             // 注: libraryCode 要求是一个馆代码，或者 *
-            string libraryCode = param_table["libraryCode"] as string;
+            string libraryCode = GetParam(param_table, "libraryCode");
+
+            macro_table["%library%"] = libraryCode;
+
             //if (libraryCode != "*")
             //    libraryCode = "," + libraryCode + ",";
             libraryCode = GetMatchLibraryCode(libraryCode);
-
-            macro_table["%library%"] = libraryCode;
 
             var items = context.PassGateOpers
                 .Where(b => b.Operation == "passgate"
@@ -734,12 +744,13 @@ Hashtable macro_table,
 string strOutputFileName)
         {
             // 注: libraryCode 要求是一个馆代码，或者 *
-            string libraryCode = param_table["libraryCode"] as string;
+            string libraryCode = GetParam(param_table, "libraryCode");
+
+            macro_table["%library%"] = libraryCode;
+
             //if (libraryCode != "*")
             //    libraryCode = "," + libraryCode + ",";
             libraryCode = GetMatchLibraryCode(libraryCode);
-
-            macro_table["%library%"] = libraryCode;
 
             var items = context.PassGateOpers
                 .Where(b => b.Operation == "passgate"
@@ -791,12 +802,13 @@ Hashtable macro_table,
 string strOutputFileName)
         {
             // 注: libraryCode 要求是一个馆代码，或者 *
-            string libraryCode = param_table["libraryCode"] as string;
+            string libraryCode = GetParam(param_table, "libraryCode");
+
+            macro_table["%library%"] = libraryCode;
+
             //if (libraryCode != "*")
             //    libraryCode = "," + libraryCode + ",";
             libraryCode = GetMatchLibraryCode(libraryCode);
-
-            macro_table["%library%"] = libraryCode;
 
             var items = context.AmerceOpers
                 .Where(b => b.Operation == "amerce"
@@ -898,12 +910,13 @@ Hashtable macro_table,
 string strOutputFileName)
         {
             // 注: libraryCode 要求是一个馆代码，或者 *
-            string libraryCode = param_table["libraryCode"] as string;
+            string libraryCode = GetParam(param_table, "libraryCode");
+
+            macro_table["%library%"] = libraryCode;
+
             //if (libraryCode != "*")
             //    libraryCode = "," + libraryCode + ",";
             libraryCode = GetMatchLibraryCode(libraryCode);
-
-            macro_table["%library%"] = libraryCode;
 
             /*
             DateTime start_time = DateTimeUtil.Long8ToDateTime(strStartDate);
@@ -1022,12 +1035,13 @@ Hashtable macro_table,
 string strOutputFileName)
         {
             // 注: libraryCode 要求是一个馆代码，或者 *
-            string libraryCode = param_table["libraryCode"] as string;
+            string libraryCode = GetParam(param_table, "libraryCode");
+
+            macro_table["%library%"] = libraryCode;
+
             //if (libraryCode != "*")
             //    libraryCode = "," + libraryCode + ",";
             libraryCode = GetMatchLibraryCode(libraryCode);
-
-            macro_table["%library%"] = libraryCode;
 
             var items = context.CircuOpers
                 .Where(b => (b.Operation == "borrow" || b.Operation == "return")
@@ -1088,12 +1102,13 @@ Hashtable macro_table,
 string strOutputFileName)
         {
             // 注: libraryCode 要求是一个馆代码，或者 *
-            string libraryCode = param_table["libraryCode"] as string;
+            string libraryCode = GetParam(param_table, "libraryCode");
+
+            macro_table["%library%"] = libraryCode;
+            
             //if (libraryCode != "*")
             //    libraryCode = "," + libraryCode + ",";
             libraryCode = GetMatchLibraryCode(libraryCode);
-
-            macro_table["%library%"] = libraryCode;
 
             var items = context.CircuOpers
                 .Where(b => (b.Operation == "borrow" || b.Operation == "return")
@@ -1153,13 +1168,12 @@ Hashtable macro_table,
 string strOutputFileName)
         {
             // 注: libraryCode 要求是一个馆代码，或者 *
-            string libraryCode = param_table["libraryCode"] as string;
+            string libraryCode = GetParam(param_table, "libraryCode");
+            macro_table["%library%"] = libraryCode;
+
             //if (libraryCode != "*")
             //    libraryCode = "," + libraryCode + ",";
-
             libraryCode = GetMatchLibraryCode(libraryCode);
-
-            macro_table["%library%"] = libraryCode;
 
             DateTime start_time = DateTimeUtil.Long8ToDateTime(strStartDate);
 
@@ -1246,11 +1260,13 @@ Hashtable macro_table,
 string strOutputFileName)
         {
             // 注: libraryCode 要求是一个馆代码，或者 *
-            string libraryCode = param_table["libraryCode"] as string;
-            if (libraryCode != "*")
-                libraryCode = "," + libraryCode + ",";
+            string libraryCode = GetParam(param_table, "libraryCode");
 
             macro_table["%library%"] = libraryCode;
+
+            //if (libraryCode != "*")
+            //    libraryCode = "," + libraryCode + ",";
+            libraryCode = GetMatchLibraryCode(libraryCode);
 
             var items = context.ItemOpers
                 .Where(b => b.Operation == "setEntity"
@@ -1317,11 +1333,13 @@ Hashtable macro_table,
 string strOutputFileName)
         {
             // 注: libraryCode 要求是一个馆代码，或者 *
-            string libraryCode = param_table["libraryCode"] as string;
-            if (libraryCode != "*")
-                libraryCode = "," + libraryCode + ",";
+            string libraryCode = GetParam(param_table, "libraryCode");
 
             macro_table["%library%"] = libraryCode;
+
+            //if (libraryCode != "*")
+            //    libraryCode = "," + libraryCode + ",";
+            libraryCode = GetMatchLibraryCode(libraryCode);
 
             DateTime start_time = DateTimeUtil.Long8ToDateTime(strStartDate);
 
@@ -1406,11 +1424,13 @@ Hashtable macro_table,
 string strOutputFileName)
         {
             // 注: libraryCode 要求是一个馆代码，或者 *
-            string libraryCode = param_table["libraryCode"] as string;
-            if (libraryCode != "*")
-                libraryCode = "," + libraryCode + ",";
+            string libraryCode = GetParam(param_table, "libraryCode");
 
             macro_table["%library%"] = libraryCode;
+
+            //if (libraryCode != "*")
+            //    libraryCode = "," + libraryCode + ",";
+            libraryCode = GetMatchLibraryCode(libraryCode);
 
             // TODO: 订购记录怎么看出是哪个分馆的? 1) 从操作者的权限可以看出 2) 从日志记录的 libraryCode 可以看出 3) 从订购记录的 distribute 元素可以看出
             var items = context.BiblioOpers
@@ -1475,12 +1495,13 @@ Hashtable macro_table,
 string strOutputFileName)
         {
             // 注: libraryCode 要求是一个馆代码，或者 *
-            string libraryCode = param_table["libraryCode"] as string;
-            if (libraryCode != "*")
-                libraryCode = "," + libraryCode + ",";
+            string libraryCode = GetParam(param_table, "libraryCode");
 
             macro_table["%library%"] = libraryCode;
 
+            //if (libraryCode != "*")
+            //    libraryCode = "," + libraryCode + ",";
+            libraryCode = GetMatchLibraryCode(libraryCode);
 
             // 编目操作都是全局的，不属于某个分馆。这里权且按照工作人员所属的分馆来进行统计
             var items = context.BiblioOpers
@@ -1534,8 +1555,9 @@ string strOutputFileName)
         }
 
         // 订购工作量
+        // 本函数也被 452 报表所用
         // parameters:
-        //      operation   为 setEntity 或 setOrder 等
+        //      operation   为 "setEntity" 或 "setOrder" 等
         public static int BuildReport_412(LibraryContext context,
 Hashtable param_table,
 string strStartDate,
@@ -1545,12 +1567,17 @@ ReportWriter writer,
 Hashtable macro_table,
 string strOutputFileName)
         {
+            if (string.IsNullOrEmpty(operation))
+                throw new ArgumentException("operation 参数值不允许为空");
+
             // 注: libraryCode 要求是一个馆代码，或者 *
-            string libraryCode = param_table["libraryCode"] as string;
-            if (libraryCode != "*")
-                libraryCode = "," + libraryCode + ",";
+            string libraryCode = GetParam(param_table, "libraryCode");
 
             macro_table["%library%"] = libraryCode;
+
+            //if (libraryCode != "*")
+            //    libraryCode = "," + libraryCode + ",";
+            libraryCode = GetMatchLibraryCode(libraryCode);
 
             // TODO: 订购记录怎么看出是哪个分馆的? 1) 从操作者的权限可以看出 2) 从日志记录的 libraryCode 可以看出 3) 从订购记录的 distribute 元素可以看出
             var items = context.ItemOpers
@@ -1608,15 +1635,16 @@ string strOutputFileName)
         // 如果 param_table 中没有 writeStyle=passEmpty 参数，默认要创建空内容的 .rml 文件
         static bool PassWrite(Hashtable param_table)
         {
-            var style = GetParam(param_table, "writeStyle");
+            var style = GetParam(param_table, "writeStyle", false);
             if (StringUtil.IsInList("passEmpty", style))
                 return true;
             return false;
         }
 
         // 订购流水
+        // 本函数也被 451 报表所用
         // parameters:
-        //      operation   为 setEntity 或 setOrder 等
+        //      operation   为 "setEntity" 或 "setOrder" 等
         public static int BuildReport_411(LibraryContext context,
 Hashtable param_table,
 string strStartDate,
@@ -1626,12 +1654,17 @@ ReportWriter writer,
 Hashtable macro_table,
 string strOutputFileName)
         {
-            // 注: libraryCode 要求是一个馆代码，或者 *
-            string libraryCode = param_table["libraryCode"] as string;
-            if (libraryCode != "*")
-                libraryCode = "," + libraryCode + ",";
+            if (string.IsNullOrEmpty(operation))
+                throw new ArgumentException("operation 参数值不允许为空");
 
+            // 注: libraryCode 要求是一个馆代码，或者 *
+            string libraryCode = GetParam(param_table, "libraryCode");
+            
             macro_table["%library%"] = libraryCode;
+
+            //if (libraryCode != "*")
+            //    libraryCode = "," + libraryCode + ",";
+            libraryCode = GetMatchLibraryCode(libraryCode);
 
             /*
             DateTime start_time = DateTimeUtil.Long8ToDateTime(strStartDate);

@@ -12,7 +12,7 @@
     <column name="修改" type="" align="right" sum="yes" class="ChangeCount" eval="" />
     <column name="删除" type="" align="right" sum="yes" class="DeleteCount" eval="" />
     <column name="复制" type="" align="right" sum="yes" class="CopyCount" eval="" />
-    <column name="移动" type="" align="right" sum="yes" class="RemoveCount" eval="" />
+    <column name="移动" type="" align="right" sum="yes" class="MoveCount" eval="" />
     <column name="操作总量" type="" align="right" sum="yes" class="TotalCount" eval="" />
   </columns>
   <css>

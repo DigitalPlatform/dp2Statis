@@ -461,7 +461,10 @@ namespace dp2Statis.Reporting
             {
                 DirectoryInfo di = new DirectoryInfo(strOutputDir);
                 if (di.Exists == true)
+                {
+                    func_showText?.Invoke($"{time.Time} (馆代码: '{strLibraryCode}')的输出目录已经存在，跳过处理");
                     return new NormalResult();
+                }
             }
 
 
@@ -543,7 +546,7 @@ namespace dp2Statis.Reporting
                 {
                     if (StringUtil.IsInList(strTimeType, strFreq) == false)
                     {
-                        func_showText?.Invoke($"频率 {strFreq} 未被 {strReportType} 选择，跳过处理");
+                        func_showText?.Invoke($"频率 {strTimeType} 未被 {strReportType} 选择，跳过处理");
                         continue;
                     }
                 }
